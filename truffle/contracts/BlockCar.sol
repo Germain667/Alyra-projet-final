@@ -146,6 +146,10 @@ contract BlockCar is ERC721URIStorage, Ownable {
         return newItemId;
     }
 
+    function getNftIdsByAddress(address _owner) external view returns (uint256[] memory) {
+        return nftIdAndOwner[_owner];
+    }
+
     /**
     * @dev Modifier to check if the address is owner or the delegator of the NFT
     * @param _tokenIds The Id of the NFT 

@@ -1,7 +1,7 @@
 import useEth from '../contexts/EthContext/useEth';
 import { useState, useEffect } from 'react';
 
-export function useIsOwner(account) {
+export function useIsToto(account) {
 
   const [isOwner, setIsOwner] = useState(false);
   const { state: { contract,accounts } } = useEth();

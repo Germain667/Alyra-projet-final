@@ -37,10 +37,10 @@ root.render(
 
 
           <Routes>
-            <Route path="/" element={<BlockCar />} />
+            <Route path="/" element={<MyVehicles />} />
             <Route path="/Home" element={<Home />} />
             <Route path="/Admin" element={<Admin />} />
-            <Route path="/MyVehicles" element={<MyVehicles />} />
+            <Route path="/MyVehicles" element={<BlockCar />} />
             <Route path="/Catalog" element={<Catalog />} />
           </Routes>
 
@@ -51,7 +51,7 @@ root.render(
               <Text color="White" mb={2} fontSize="2xl">
                 © 2023 BlockCar. Tous droits réservés.
               </Text>
-              <Link href="https://github.com/fabcoulon/VotingDapp" mb={2} color="white" fontSize="2xl">
+              <Link href="https://github.com/Germain667/Alyra-projet-4" mb={2} color="white" fontSize="2xl">
                 <Icon as={FaGithub} color="blue.500" mr={2} />
                 Dépôt Git
               </Link>
