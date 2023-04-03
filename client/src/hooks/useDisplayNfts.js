@@ -3,9 +3,8 @@ import { useState, useEffect } from 'react';
 
 export function useDisplayNfts(account) {
 
-  const [isOwner, setIsOwner] = useState(false);
-  //const [idNfts, setId] = useState("1");
-  const { state: { contract,accounts } } = useEth();
+  const [idNfts, setIdNfts] = useState([]);
+  const { state: { contract, accounts } } = useEth();
 
   useEffect(() => {
   
@@ -16,22 +15,21 @@ export function useDisplayNfts(account) {
 
     //const owner = await contract.methods.owner().call();
     //const test = await contract.methods.getCarNft(1).call({ from: accounts[0] });
-    const test = await contract.methods.getNftIdsByAddress(accounts[0]).call({ from: accounts[0] });
+    //const test = await contract.methods.getNftIdsByAddress(accounts[0]).call({ from: accounts[0] });
     // console.log("typeof : "+ typeof(test));
     // console.log("useDisplayNft : "+test);
 
-    // setId("2");
-    setIsOwner(true);
+    setIdNfts(await contract.methods.getNftIdsByAddress(accounts[0]).call({ from: accounts[0] }));
 
     
 
   }
   fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [account])
+}, [account, contract, accounts])
   
   return { 
-    isOwner  
+    idNfts  
   }
   
 }

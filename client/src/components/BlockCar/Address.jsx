@@ -7,8 +7,9 @@ function Address() {
   return (
     <div className="addr">
         <Text color="white" mb={2} align="center">
-          Connected address : 
-          {accounts && accounts[0] && <pre>{accounts[0]}</pre>}
+          Connected address : <>
+          {accounts && accounts[0] && <>{accounts[0]}</>}
+          </>
         </Text>
     </div>
     );

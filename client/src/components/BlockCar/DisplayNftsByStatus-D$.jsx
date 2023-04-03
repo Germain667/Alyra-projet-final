@@ -1,43 +1,38 @@
 import useEth from "../../contexts/EthContext/useEth";
 import React, { useState, useEffect } from "react";
 import { useIsOwner } from "../../hooks/useIsOwner";
-import { Link } from 'react-router-dom';
 
 import {Flex, Circle, Box, Image, Badge, Button} from '@chakra-ui/react';
 //import {Icon, chakra, Tooltip } from '@chakra-ui/react';
 //import { FiShoppingCart } from 'react-icons/fi';
 
 
-function DisplayNfts(props) {
+function DisplayNftsByStatus(props) {
   const { state: { contract, accounts } } = useEth();
-  const { myData, MyPage } = props;
+  const { myData } = props;
   const [nfts, setNfts] = useState([]);
   const { isOwner } = useIsOwner(accounts);
   const [refresh, setRefresh] = useState(false);
 
-  //console.log(MyPage);
 
   useEffect(() => {
     const fetchNfts = async () => {
       const nfts = [];
 
-      if (myData && myData.length) {
-        for (const id of myData) {
-          const nft = await contract.methods.getCarNft(id).call({ from: accounts[0] });
-          const _tokenURI = await contract.methods.tokenURI(id).call({ from: accounts[0] });
+      for (const id of myData) {
+        const _tokenURI = await contract.methods.tokenURI(id).call({ from: accounts[0] });
 
-          //console.log("_tokenURI : "+_tokenURI);
+        //console.log("_tokenURI : "+_tokenURI);
 
-          // fetch(_tokenURI)
-          // .then(response => response.json())
-          // .then(data => console.log(data))
-          // .catch(error => console.error(error))
+        // fetch(_tokenURI)
+        // .then(response => response.json())
+        // .then(data => console.log(data))
+        // .catch(error => console.error(error))
 
 
-          const mergeObject = { ...nft, _tokenURI, id };
-          nfts.push({ mergeObject });
-          //console.log(mergeObject);
-        }
+        const mergeObject = { ...nft, _tokenURI, id };
+        nfts.push({ mergeObject });
+        //console.log(mergeObject);
       }
 
       setRefresh(false);
@@ -49,15 +44,17 @@ function DisplayNfts(props) {
 
 
   const askKyc = async (id) => {
+    console.log("id : "+id);
     await contract.methods.askKyc(id).send({ from: accounts[0] });
     setRefresh(true);
   };
 
   const kycIsApproved = async (id) => {
+    console.log("id : "+id);
     await contract.methods.kycIsApproved(id).send({ from: accounts[0] });
     setRefresh(true);
 
-  };  
+  };
 
   return (
     <Flex p={50} w="full" alignItems="center" justifyContent="center" flexWrap="wrap">
@@ -105,6 +102,7 @@ function DisplayNfts(props) {
       <Image
         src={data.mergeObject._tokenURI}
         //src="http://localhost:8082/images/04ba5a200c3870213403b5da88b49c69"
+        alt={`Picture of ${data.name}`}
         roundedTop="lg"
       />
       <Box p="6">
@@ -178,9 +176,8 @@ function DisplayNfts(props) {
         </Flex>
         )</>}
       </Box>
-      {(!data.mergeObject.status.isKycDone && !data.mergeObject.status.isWaitingKyc && MyPage==="MyVehicles") && <Button size="lg" onClick={() => askKyc(data.mergeObject.id)} colorScheme='blue'>Demander le Kyc</Button>}
-      {(isOwner && data.mergeObject.status.isWaitingKyc && MyPage==="Admin")&& <Button size="lg" onClick={() => kycIsApproved(data.mergeObject.id)} colorScheme='orange'>Valider le Kyc</Button>}
-      {(data.mergeObject.status.isKycDone && MyPage==="MyVehicles") && <Link to={`/Details?id=${data.mergeObject.id}`}><Button size="lg" colorScheme='orange'>Details</Button></Link>}
+      {(!isOwner && !data.mergeObject.status.isKycDone && !data.mergeObject.status.isWaitingKyc) && <Button size="lg" onClick={() => askKyc(data.mergeObject.id)} colorScheme='blue'>Demander le Kyc</Button>}
+      {(isOwner && data.mergeObject.status.isWaitingKyc)&& <Button size="lg" onClick={() => kycIsApproved(data.mergeObject.id)} colorScheme='orange'>Valider le Kyc</Button>}
     </Box>
 
       )) : <p>No NFTs available</p>}
@@ -188,4 +185,4 @@ function DisplayNfts(props) {
   );
 }
 
-export default DisplayNfts;
+export default DisplayNftsByStatus;

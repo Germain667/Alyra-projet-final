@@ -1,12 +1,12 @@
-import { Text } from "@chakra-ui/react";
+import { Heading } from "@chakra-ui/react";
 
 function Home() {
   return (
     <>
-        <Text color="black" mb={2} align="center">
-            Acceuil
-        </Text>
-    </>
+        <Heading as="h1" size="xl" textAlign="center" mb={8}>
+            Accueil
+        </Heading>
+</>
     );
 }
 

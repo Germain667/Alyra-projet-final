@@ -35,8 +35,8 @@ function HeaderMenu() {
           <Link to="/Catalog">
             <Text fontSize="large" fontWeight="bold" color="white" _hover={{color: "blue.600"}}>Catalogue</Text>
           </Link>
-          </Box>
         </Box>
+      </Box>
     </>
   );
 }

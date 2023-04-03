@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { EthProvider } from "./contexts/EthContext";
-import BlockCar from "./components/BlockCar";
+//import BlockCar from "./components/BlockCar";
 import { ChakraProvider } from '@chakra-ui/react'
 import "./styles.css";
 import Address from "./components/BlockCar/Address";
@@ -10,6 +10,7 @@ import Home from "./views/Home";
 import MyVehicles from "./views/MyVehicles";
 import Catalog from "./views/Catalog";
 import Admin from "./views/Admin";
+import Details from "./views/Details";
 import HeaderMenu from "./components/BlockCar/HeaderMenu";
 import { Box, Heading, Link, Text, Icon, Flex, Image } from "@chakra-ui/react";
 import { FaGithub } from "react-icons/fa";
@@ -40,13 +41,14 @@ root.render(
             <Route path="/" element={<MyVehicles />} />
             <Route path="/Home" element={<Home />} />
             <Route path="/Admin" element={<Admin />} />
-            <Route path="/MyVehicles" element={<BlockCar />} />
+            <Route path="/MyVehicles" element={<MyVehicles />} />
             <Route path="/Catalog" element={<Catalog />} />
+            <Route path="/Details" element={<Details />} />
           </Routes>
 
           
 
-          <Box bg="gray.700" boxShadow="md" mt={8}  position="fixed" bottom="0" width="100%">
+          <Box bg="gray.700" boxShadow="md" mt={8}  position="fixed" /*position="absolute"*/ bottom="0" width="100%">
             <Flex direction="column" justify="center" align="center" p={4}>
               <Text color="White" mb={2} fontSize="2xl">
                 © 2023 BlockCar. Tous droits réservés.

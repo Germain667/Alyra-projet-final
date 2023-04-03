@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 
 export function useIsToto(account) {
 
-  const [isOwner, setIsOwner] = useState(false);
+  const [isToto, setIsToto] = useState(false);
   const { state: { contract,accounts } } = useEth();
 
   useEffect(() => {
@@ -13,14 +13,14 @@ export function useIsToto(account) {
   
   async function fetchData() { 
     const owner = await contract.methods.owner().call();
-    setIsOwner(owner === accounts[0]);
+    setIsToto(owner === accounts[0]);
   }
   fetchData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account])
   
   return { 
-    isOwner 
+    isToto 
   }
   
 }

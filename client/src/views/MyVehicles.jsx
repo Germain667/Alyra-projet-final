@@ -2,10 +2,11 @@ import { Button, Flex, FormControl, FormLabel, Heading, Input, Stack, useColorMo
 import React, { useState } from "react";
 //import { SmallCloseIcon, Avatar, AvatarBadge, IconButton, Center } from '@chakra-ui/icons';
 import useEth from '../contexts/EthContext/useEth';
+import axios from 'axios';
+//import { Navigate } from 'react-router-dom';
 
 import { useDisplayNfts } from "../hooks/useDisplayNfts";
-import { useIsToto } from "../hooks/useIsToto";
-import { useIsOwner } from "../hooks/useIsOwner";
+import { useDisplayNfts4Delegator } from "../hooks/useDisplayNfts4Delegator";
 
 import DisplayNfts from "../components/BlockCar/DisplayNfts";
 import DatePicker from "react-datepicker";
@@ -19,41 +20,15 @@ function MyVehicles() {
 
     const { state: { contract, accounts } } = useEth();
     const [startDate, setStartDate] = useState(new Date());   
-    const { test } = useDisplayNfts(accounts);  
-    const { toto } = useIsToto(accounts);  
-    const { isOwner } = useIsOwner(accounts);
-    
-    console.log("toto: "+toto);
-    console.log("isOwner: "+isOwner);
-    //console.log("test depuis MuVéhicles: "+test);
-    //console.log("typeof depuis MuVéhicles : "+ typeof(test));
+    const { idNfts } = useDisplayNfts(accounts);  
+    const { idNfts4Delegator } = useDisplayNfts4Delegator(accounts);  
+    const [file, setFile] = useState();
+    //const [refresh, setRefresh] = useState();
+    const [fileName, setFileName] = useState("");
 
-
-    //const testToString = String(test);
-    //console.log("to string : " + testToString);
-
-
-
-        /*test.forEach((item) => {
-          console.log(item);
-        });*/
-
-    
-    //test.forEach(element => console.log(element));
-
-    //const [file, setFile] = useState(null); 
-
-
-    // (async () => { 
-    //     const test = await contract.methods.getCarNft(1).call({ from: accounts[0] });
-    //     alert(test);
-    //   })();
-
-
-
-
-    const handleFileChange = (event) => {
-        //setFile(event.target.files[0]);
+    const handleFileChange = (e) => {
+      setFile(e.target.files[0]);
+      setFileName(e.target.files[0].name);
     };
 
     const handleSubmit = async () => {
@@ -63,10 +38,9 @@ function MyVehicles() {
         const day = selectedDate.getDate();
         const month = String(selectedDate.getMonth() + 1).padStart(2, "0"); // Ajouter un 0 si nécessaire
         const year = selectedDate.getFullYear();
-        //console.log(`Jour : ${day}, Mois : ${month}, Année : ${year}`);
         const date = day+month+year;
 
-        const file = document.getElementById('file').value;
+        const fileForm = document.getElementById('file').value;
         const vinNumber = document.getElementById('vinNumber').value;
         const brand = document.getElementById('brand').value;
         const model = document.getElementById('model').value;
@@ -75,12 +49,33 @@ function MyVehicles() {
         const countryRegistration = document.getElementById('countryRegistration').value;
         //const dateRegistration = document.getElementById('dateRegistration').value;
       
-        if (file === '' || vinNumber === '' || brand === '' || model === '' || color === '' || power === '' || countryRegistration === '') {
+        if (fileForm === '' || vinNumber === '' || brand === '' || model === '' || color === '' || power === '' || countryRegistration === '') {
             alert('Veuillez remplir tous les champs');
         } else {
-            await contract.methods.mintCar(file,vinNumber,brand,model,color,power,countryRegistration,date).send({ from: accounts[0] });
-            handleReset();
-            alert('Formulaire envoyé');
+
+
+          const formData = new FormData()
+          formData.append("image", file)
+          //formData.append("description", fileName)
+          formData.append("fileName", fileName)
+      
+          //console.log("image : ", file);
+          //console.log("filename : ", fileName);
+    
+          const result = await axios.post('http://localhost:8082/images', formData, { headers: {'Content-Type': 'multipart/form-data'}})
+          const entireURI = result.data.entireURI;
+          
+          //console.log(result);
+          //console.log("uri : "+result.data.entireURI);
+          //console.log("imageName" + result.data.imageName);
+
+          await contract.methods.mintCar(entireURI,vinNumber,brand,model,color,power,countryRegistration,date).send({ from: accounts[0] });
+
+          handleReset();
+          //setRefresh(true);
+          alert('Formulaire envoyé');
+          //return <Navigate to="/MyVehicles" />;
+          //window.location.reload();
         }
       };
 
@@ -97,7 +92,9 @@ function MyVehicles() {
 
   return (
     <>
-
+    <Heading as="h1" size="xl" textAlign="center" mb={8}>
+        Mes véhicules
+    </Heading>
     <Flex
       minH={'10vh'}
       align={'center'}
@@ -134,7 +131,7 @@ function MyVehicles() {
           <Input placeholder="Modèle" _placeholder={{ color: 'gray.500' }} type="text" />
         </FormControl>
         <FormControl id="color" isRequired>
-          <FormLabel fontSize="large">Coleur</FormLabel>
+          <FormLabel fontSize="large">Couleur</FormLabel>
           <Input placeholder="Modèle" _placeholder={{ color: 'gray.500' }} type="text" />
         </FormControl>
         <FormControl id="power" isRequired>
@@ -163,8 +160,24 @@ function MyVehicles() {
       </Stack>
     </Flex>
 
-    <DisplayNfts />
-
+    <Heading>
+      Mes véhicules
+    </Heading>
+    <DisplayNfts myData={idNfts} MyPage="MyVehicles" />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
+    <Heading>
+      Les véhicules qui m'ont été délégués
+    </Heading>
+    <DisplayNfts myData={idNfts4Delegator} MyPage="MyVehicles" />
+    <br />
+    <br />
+    <br />
+    <br />
+    <br />
     </>
     );
 }

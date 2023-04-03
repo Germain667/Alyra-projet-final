@@ -63,8 +63,11 @@ contract BlockCar is ERC721URIStorage, Ownable {
 	/// @dev Mapping the NFT ID with the car informations
     mapping(uint256 => Car) nftCarInfos;
 
-    /// @dev Mapping the NFT ID with informations for sale
+    /// @dev Mapping the NFT ID with the owner
     mapping(address => uint256[]) public nftIdAndOwner;  
+
+    /// @dev Mapping the NFT ID with the delegator
+    mapping(address => uint256[]) public nftIdAndDelegator;  
 
     /// @dev Mapping the NFT ID with informations for sale
     //mapping(uint256 => address) delegatorList;
@@ -148,6 +151,49 @@ contract BlockCar is ERC721URIStorage, Ownable {
 
     function getNftIdsByAddress(address _owner) external view returns (uint256[] memory) {
         return nftIdAndOwner[_owner];
+    }
+
+    function getNftIdsByDelegatorAddress(address _owner) external view returns (uint256[] memory) {
+        return nftIdAndDelegator[_owner];
+    }
+    
+        
+        
+
+    function getNftIdsByStatus(bool _isOnSale, bool _isDelegated, bool _isStolen,bool _isWaitingKyc,bool _isKycDone,bool _isScrapped) external view returns (uint256[] memory) {
+        uint256 itemId = tokenIds.current();
+        uint32 count;
+
+
+       // First, we count the number of cars that match the specified status
+        for (uint32 i = 0; i <= itemId; i++) {
+            if ((nftCarInfos[i].status.isOnSale == _isOnSale && _isOnSale==true) ||
+                (nftCarInfos[i].status.isDelegated == _isDelegated && _isDelegated==true) ||
+                (nftCarInfos[i].status.isStolen == _isStolen && _isStolen==true) ||
+                (nftCarInfos[i].status.isWaitingKyc == _isWaitingKyc && _isWaitingKyc==true) ||
+                (nftCarInfos[i].status.isKycDone == _isKycDone && _isKycDone==true) ||
+                (nftCarInfos[i].status.isScrapped == _isScrapped && _isScrapped==true)) {
+                count++;
+            }
+        }
+
+        uint256[] memory Ids = new uint256[](count);
+        uint32 index = 0;
+
+        for (uint32 i = 0; i <= itemId; i++) {
+            if ((nftCarInfos[i].status.isOnSale == _isOnSale && _isOnSale==true) ||
+                (nftCarInfos[i].status.isDelegated == _isDelegated && _isDelegated==true) ||
+                (nftCarInfos[i].status.isStolen == _isStolen && _isStolen==true) ||
+                (nftCarInfos[i].status.isWaitingKyc == _isWaitingKyc && _isWaitingKyc==true) ||
+                (nftCarInfos[i].status.isKycDone == _isKycDone && _isKycDone==true) ||
+                (nftCarInfos[i].status.isScrapped == _isScrapped && _isScrapped==true)) {
+                Ids[index] = i;
+                index++;
+            }
+        }
+
+
+        return Ids;
     }
 
     /**
@@ -262,6 +308,7 @@ contract BlockCar is ERC721URIStorage, Ownable {
     function delegeteCar (address delegatorAddress, uint256 _tokenIds) external isNftOwner (_tokenIds) {
         require(nftCarInfos[_tokenIds].status.isKycDone == true, "The KYC is not approved");
         approve(delegatorAddress, _tokenIds);
+        nftIdAndDelegator[delegatorAddress].push(_tokenIds);
         nftCarInfos[_tokenIds].status.isDelegated = true;
         //emit CarIsDelegated(msg.sender, delegatorAddress, _tokenIds);
     }
@@ -273,6 +320,7 @@ contract BlockCar is ERC721URIStorage, Ownable {
     function stopDelegation (uint256 _tokenIds) external isNftOwner (_tokenIds) {
         require(nftCarInfos[_tokenIds].status.isDelegated == true, "The NFT is not delegated");
         nftCarInfos[_tokenIds].status.isDelegated = false;
+        delete (nftIdAndDelegator[getApproved(_tokenIds)][_tokenIds]);
         emit StopDelegation(msg.sender, _tokenIds);
     }
 
@@ -281,8 +329,8 @@ contract BlockCar is ERC721URIStorage, Ownable {
     * @param _tokenIds The Id of the NFT 
     */
     function askKyc (uint256 _tokenIds) external isNftOwner (_tokenIds) {
-        require(nftCarInfos[_tokenIds].status.isKycDone == true, "The KYC is done");
-        require(nftCarInfos[_tokenIds].status.isWaitingKyc == true, "The KYC is already waiting");
+        require(nftCarInfos[_tokenIds].status.isKycDone == false, "The KYC is done");
+        require(nftCarInfos[_tokenIds].status.isWaitingKyc == false, "The KYC is already waiting");
         nftCarInfos[_tokenIds].status.isWaitingKyc = true;
         emit KycIsWaiting(msg.sender, _tokenIds);
     }
