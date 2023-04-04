@@ -93,7 +93,16 @@ function DisplayNfts(props) {
           bg="orange.500"
         />
       )}
-      {data.mergeObject.status.isKycDone && (
+      {(data.mergeObject.status.isKycDone && !data.mergeObject.status.isOnSale) && (
+        <Circle
+          size="10px"
+          position="absolute"
+          top={2}
+          right={2}
+          bg="blue.500"
+        />
+      )}
+      {(data.mergeObject.status.isKycDone && data.mergeObject.status.isOnSale) && (
         <Circle
           size="10px"
           position="absolute"
@@ -159,7 +168,7 @@ function DisplayNfts(props) {
           </Box>
         </Flex>
 
-        {data.mergeObject.status.isOneSale && <>(
+        {data.mergeObject.status.isOnSale && <>
         <Flex justifyContent="space-between" alignContent="center">
           <Box fontSize="2xl" color={('gray.800', 'white')}>
             <Box as="span" color={'gray.600'} fontSize="lg">
@@ -167,20 +176,11 @@ function DisplayNfts(props) {
             </Box>
           </Box>
         </Flex>
-        )</>}
-        {data.mergeObject.status.isOneSale && <>(
-        <Flex justifyContent="space-between" alignContent="center">
-          <Box fontSize="2xl" color={('gray.800', 'white')}>
-            <Box as="span" color={'gray.600'} fontSize="lg">
-            Kilométrage : {data.mergeObject.infosForSale.mileage} Km
-            </Box>
-          </Box>
-        </Flex>
-        )</>}
+        </>}
       </Box>
       {(!data.mergeObject.status.isKycDone && !data.mergeObject.status.isWaitingKyc && MyPage==="MyVehicles") && <Button size="lg" onClick={() => askKyc(data.mergeObject.id)} colorScheme='blue'>Demander le Kyc</Button>}
       {(isOwner && data.mergeObject.status.isWaitingKyc && MyPage==="Admin")&& <Button size="lg" onClick={() => kycIsApproved(data.mergeObject.id)} colorScheme='orange'>Valider le Kyc</Button>}
-      {(data.mergeObject.status.isKycDone && MyPage==="MyVehicles") && <Link to={`/Details?id=${data.mergeObject.id}`}><Button size="lg" colorScheme='orange'>Details</Button></Link>}
+      {(data.mergeObject.status.isKycDone && (MyPage==="MyVehicles" || MyPage==="Catalog" )) && <Link to={`/Details?id=${data.mergeObject.id}`}><Button size="lg" colorScheme='orange'>Details</Button></Link>}
     </Box>
 
       )) : <p>No NFTs available</p>}

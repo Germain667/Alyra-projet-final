@@ -1,9 +1,9 @@
-import { Heading, Box, Flex, Circle, Image, Badge, Text, Button  } from "@chakra-ui/react";
-import { Link } from 'react-router-dom';
+import { Box, Container, Stack, Text, Image, Flex, Button, Heading, SimpleGrid, StackDivider, useColorModeValue, List, ListItem,
+  } from '@chakra-ui/react';
+import { useNavigate , useLocation  } from 'react-router-dom';
 //import DisplayNfts from "../components/BlockCar/DisplayNfts";
 //import { useDisplayNfts4Admin } from "../hooks/useDisplayNfts4Admin";
 import useEth from '../contexts/EthContext/useEth';
-import { useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 
@@ -13,10 +13,14 @@ function Details() {
     const { state: { accounts, contract } } = useEth();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
-    //const [refresh, setRefresh] = useState(false);
-    const id = searchParams.get('id');
+    const [refresh, setRefresh] = useState(false);
+    const [isNftOwnerOrDelegator, setNeftStatus] = useState(false);
     const [nft, setNft] = useState({});
     const [tokenURI, setTokenURI] = useState('');
+    const buttonBgColor = useColorModeValue('gray.900', 'gray.50')
+    const buttonTextColor = useColorModeValue('white', 'gray.900')
+    const id = searchParams.get('id');
+    const navigate  = useNavigate();
 
     useEffect(() => {
         const displayDetails = async () => {
@@ -25,17 +29,33 @@ function Details() {
             setNft(nft);
             setTokenURI(_tokenURI);
 
-            // console.log(id)
-            // console.log(nft)
-            // console.log(_tokenURI)
+            console.log(id)
+            console.log(nft)
+            console.log(_tokenURI)
+
+            const owner = await contract.methods.ownerOf(id).call();
+            const delegtaor = await contract.methods.getApproved(id).call();
+
+            console.log("owner"+owner);
+            console.log("delegtaor"+delegtaor);
+            console.log("accounts[0]"+accounts[0]);
+
+            if (owner===accounts[0] || delegtaor===accounts[0]) {
+                setNeftStatus(true);
+            }
         
-            //setRefresh(false);
+            setRefresh(false);
         };
     
         displayDetails();
-      }, [contract, accounts, id]);
+      }, [contract, accounts, id, refresh]);
     
 
+      const sellNFT = async (id) => {
+        console.log("id : "+id)
+        await contract.methods.carIsForSaleAndSetInformationsForSale(id,"50","5","1564654","germain 06 30 97 83 62").send({ from: accounts[0] });
+        setRefresh(true);
+      };
 
     return (
         <>
@@ -43,141 +63,205 @@ function Details() {
             <Heading as="h1" size="xl" textAlign="center" mb={8}>
                 Détail du NFT 
             </Heading>
-
+        
             <Flex alignItems="center" justifyContent="center">
-                <Link to="/MyVehicles">
+
                 <Button
                     colorScheme="blue"
                     size="md"
                     variant="outline"
                     fontWeight="medium"
                     _hover={{ bg: 'blue.600', color: 'white' }}
+                    onClick={() => navigate(-1)}
                     >
                     <Text>Retour</Text>
                 </Button>
-                </Link>
              </Flex>
-            <Flex p={20} w="full" alignItems="center" justifyContent="center" flexWrap="wrap">
-         {nft.length ? (
-                <Box 
-                key={nft.vin}
-                maxW="sm"
-                marginBottom="10px"
-                marginLeft="10px"
-                marginRight="10px"
-                borderWidth="1px"
-                rounded="lg"
-                shadow="lg"
-                position="relative">
-
-                {(!nft.status.isKycDone && !nft.status.isWaitingKyc) && (
-                    <Circle
-                    size="10px"
-                    position="absolute"
-                    top={2}
-                    right={2}
-                    bg="red.500"
+             {nft.length ? 
+             <Container maxW={'7xl'}>
+                <SimpleGrid
+                    columns={{ base: 1, lg: 2 }}
+                    spacing={{ base: 8, md: 10 }}
+                    py={{ base: 18, md: 24 }}>
+                    <Flex>
+                    <Image
+                        rounded={'md'}
+                        alt={'product image'}
+                        src={tokenURI}
+                        fit={'cover'}
+                        align={'center'}
+                        w={'100%'}
+                        h={{ base: '100%', sm: '300px', lg: '200px' }}
                     />
-                )}
-                {nft.status.isWaitingKyc && (
-                    <Circle
-                    size="10px"
-                    position="absolute"
-                    top={2}
-                    right={2}
-                    bg="orange.500"
-                    />
-                )}
-                {nft.status.isKycDone && (
-                    <Circle
-                    size="10px"
-                    position="absolute"
-                    top={2}
-                    right={2}
-                    bg="green.500"
-                    />
-                )}
-                <Image
-                    src={tokenURI}
-                    roundedTop="lg"
-                />
-                <Box p="6">
-                    <Box d="flex" alignItems="baseline">
-                    
-                        <Badge rounded="full" px="2" fontSize="1.5em" colorScheme="blue">
+                    </Flex>
+                    <Stack spacing={{ base: 6, md: 10 }}>
+                    <Box as={'header'}>
+                        <Heading
+                        lineHeight={1.1}
+                        fontWeight={600}
+                        fontSize={{ base: '2xl', sm: '4xl', lg: '5xl' }}>
                         {nft.brand} {nft.model}
-                        </Badge>
+                        </Heading>
+                        <Text
+                        color={('gray.900', 'gray.400')}
+                        fontWeight={300}
+                        fontSize={'2xl'}>
+
+
+                        {nft.status.isOnSale ? `${nft.infosForSale.price} ETH` : "Cette voiture n'est pas en vente"}
+
+
+
+                        </Text>
+                    </Box>
+
                     
-                    </Box>
+                    <Stack
+                        spacing={{ base: 4, sm: 6 }}
+                        direction={'column'}
+                        divider={
+                        <StackDivider
+                            borderColor={('gray.200', 'gray.600')}
+                        />
+                        }>
 
-                    <Flex mt="1" justifyContent="space-between" alignContent="center">
-                    <Box
-                        fontSize="smaller"
-                        fontWeight="semibold"
-                        as="h4"
-                        lineHeight="tight"
-                        isTruncated>
-                        Couleur : {nft.color}
-                    </Box>
-                    </Flex>
+                        <Box>
+                        <Text
+                            fontSize={{ base: '16px', lg: '18px' }}
+                            color={('yellow.500', 'yellow.300')}
+                            fontWeight={'500'}
+                            textTransform={'uppercase'}
+                            mb={'4'}>
+                            Informations concernant la voiture
+                        </Text>
 
-                    <Flex mt="1" justifyContent="space-between" alignContent="center">
-                    <Box
-                        fontSize="smaller"
-                        fontWeight="semibold"
-                        as="h4"
-                        lineHeight="tight"
-                        isTruncated>
-                        Pays d'immatriculation : {nft.registrationCountry}
-                    </Box>
-                    </Flex>
-
-                    <Flex mt="1" justifyContent="space-between" alignContent="center">
-                    <Box
-                        fontSize="smaller"
-                        fontWeight="semibold"
-                        as="h4"
-                        lineHeight="tight"
-                        isTruncated>
-                        Année d'immatriculation : {nft.registrationDate}
-                    </Box>
-                    </Flex>
-                    <Flex mt="1" justifyContent="space-between" alignContent="center">
-                    <Box
-                        fontSize="smaller"
-                        fontWeight="semibold"
-                        as="h4"
-                        lineHeight="tight"
-                        isTruncated>
-                        Puissance : {nft.power} Kw
-                    </Box>
-                    </Flex>
-
-                    {nft.status.isOneSale && <>(
-                    <Flex justifyContent="space-between" alignContent="center">
-                    <Box fontSize="2xl" color={('gray.800', 'white')}>
-                        <Box as="span" color={'gray.600'} fontSize="lg">
-                        Prix : {nft.infosForSale.price} ETH 
+                        <List 
+                        spacing={2}>
+                            <ListItem>
+                            <Text as={'span'} fontWeight={'bold'}>
+                                Numéro VIN :
+                            </Text>{' '}
+                            {nft.vin}
+                            </ListItem>
+                            <ListItem>
+                            <Text as={'span'} fontWeight={'bold'}>
+                                Marque : 
+                            </Text>{' '}
+                            {nft.brand}
+                            </ListItem>
+                            <ListItem>
+                            <Text as={'span'} fontWeight={'bold'}>
+                                Modèle :
+                            </Text>{' '}
+                            {nft.model}
+                            </ListItem>
+                            <ListItem>
+                            <Text as={'span'} fontWeight={'bold'}>
+                                Couleur :
+                            </Text>{' '}
+                            {nft.color}
+                            </ListItem>
+                            <ListItem>
+                            <Text as={'span'} fontWeight={'bold'}>
+                                Puissance :
+                            </Text>{' '}
+                            {nft.power} Kw
+                            </ListItem>
+                            <ListItem>
+                            <Text as={'span'} fontWeight={'bold'}>
+                                Pays d'immatriculation :
+                            </Text>{' '}
+                            {nft.registrationCountry}
+                            </ListItem>
+                            <ListItem>
+                            <Text as={'span'} fontWeight={'bold'}>
+                                Date d'immatriculation :
+                            </Text>{' '}
+                            {nft.registrationDate}
+                            </ListItem>
+                        </List>
                         </Box>
-                    </Box>
-                    </Flex>
-                    )</>}
-                    {nft.status.isOneSale && <>(
-                    <Flex justifyContent="space-between" alignContent="center">
-                    <Box fontSize="2xl" color={('gray.800', 'white')}>
-                        <Box as="span" color={'gray.600'} fontSize="lg">
-                        Kilométrage : {nft.infosForSale.mileage} Km
+                    </Stack>
+
+                    <Stack
+                        spacing={{ base: 4, sm: 6 }}
+                        direction={'column'}
+                        divider={
+                        <StackDivider
+                            borderColor={('gray.200', 'gray.600')}
+                        />
+                        }>
+
+                        <Box>
+                        <Text
+                            fontSize={{ base: '16px', lg: '18px' }}
+                            color={('yellow.500', 'yellow.300')}
+                            fontWeight={'500'}
+                            textTransform={'uppercase'}
+                            mb={'4'}>
+                            Informations concernant la vente
+                        </Text>
+
+                        <List 
+                        spacing={2}>
+                            <ListItem>
+                            <Text as={'span'} fontWeight={'bold'}>
+                                Kilométrage :
+                            </Text>{' '}
+                            {nft.infosForSale.mileage}
+                            </ListItem>
+                            <ListItem>
+                            <Text as={'span'} fontWeight={'bold'}>
+                                Prix : 
+                            </Text>{' '}
+                            {nft.infosForSale.price}
+                            </ListItem>
+                            <ListItem>
+                            <Text as={'span'} fontWeight={'bold'}>
+                                Localisation :
+                            </Text>{' '}
+                            {nft.infosForSale.localisation}
+                            </ListItem>
+                            <ListItem>
+                            <Text as={'span'} fontWeight={'bold'}>
+                                Contact :
+                            </Text>{' '}
+                            {nft.infosForSale.contactDetails}
+                            </ListItem>
+                        </List>
                         </Box>
-                    </Box>
-                    </Flex>
-                    )</>}
-                </Box>
-                
-                </Box>
-                ) : (
-                    <p>En cours de chargement</p>
-            )}
-                </Flex>
+                    </Stack>
+                    
+
+                    {(!nft.status.isOnSale && isNftOwnerOrDelegator) &&
+                    <Button
+                        rounded={'none'}
+                        w={'full'}
+                        mt={8}
+                        size={'lg'}
+                        py={'7'}
+                        bg={buttonBgColor}
+                        color={buttonTextColor}
+                        textTransform={'uppercase'}
+                        _hover={{
+                        transform: 'translateY(2px)',
+                        boxShadow: 'lg',
+                        }}
+                        onClick={() => sellNFT(id)}
+                        >
+                        Mettre en vente
+                    </Button>
+                    }
+
+
+
+
+
+                    </Stack>
+                </SimpleGrid>
+                </Container>
+                       : <p>No NFTs available</p>}
+                  
 
         </>
         );
