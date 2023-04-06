@@ -23,7 +23,6 @@ function MyVehicles() {
     const { idNfts } = useDisplayNfts(accounts);  
     const { idNfts4Delegator } = useDisplayNfts4Delegator(accounts);  
     const [file, setFile] = useState();
-    //const [refresh, setRefresh] = useState();
     const [fileName, setFileName] = useState("");
 
     const handleFileChange = (e) => {

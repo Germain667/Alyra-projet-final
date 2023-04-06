@@ -11,7 +11,7 @@ export function useDisplayNfts4Catalog(account) {
         async function fetchData() { 
             if(contract !== null) {
                 //_isOnSale, _isDelegated, _isStolen, _isWaitingKyc, _isKycDone, _isScrapped
-                const nftIds = await contract.methods.getNftIdsByOnSaleAndKycDone(true,true).call({ from: accounts[0] });
+                const nftIds = await contract.methods.getNftIdsByOnSaleAndKycDone(true,false).call({ from: accounts[0] });
                 setIdNfts(nftIds);
                 //console.log("idNfts : ",nftIds);
             }

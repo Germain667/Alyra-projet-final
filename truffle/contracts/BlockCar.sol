@@ -133,7 +133,7 @@ contract BlockCar is ERC721URIStorage, Ownable {
 
        // First, we count the number of cars that match the specified status
         for (uint32 i = 0; i <= itemId; i++) {
-            if ((nftCarInfos[i].status.isOnSale == _isOnSale) &&
+            if ((nftCarInfos[i].status.isOnSale == _isOnSale) ||
                 (nftCarInfos[i].status.isKycDone == _isKycDone)) {
                 count++;
             }
@@ -143,7 +143,7 @@ contract BlockCar is ERC721URIStorage, Ownable {
         uint32 index = 0;
 
         for (uint32 i = 0; i <= itemId; i++) {
-            if ((nftCarInfos[i].status.isOnSale == _isOnSale) &&
+            if ((nftCarInfos[i].status.isOnSale == _isOnSale) ||
                 (nftCarInfos[i].status.isKycDone == _isKycDone)) {
                 Ids[index] = i;
                 index++;
