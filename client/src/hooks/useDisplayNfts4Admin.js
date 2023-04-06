@@ -1,10 +1,11 @@
+//import { txhash, web3 } from '@openzeppelin/test-helpers/src/setup';
 import useEth from '../contexts/EthContext/useEth';
 import { useState, useEffect } from 'react';
 
 export function useDisplayNfts4Admin(account) {
 
   const [idNfts, setIdNfts] = useState([]);
-  const { state: { contract } } = useEth();
+  const { state: { contract, web3, txhash } } = useEth();
 
   useEffect(() => {
   
@@ -16,9 +17,13 @@ const Ids = [];
     async function getPastEvent() {
         if (contract) 
         {
+            const deployTx = await web3.eth.getTransaction(txhash);
+            const getCurrentBlock = await web3.eth.getBlockNumber();
 
+            //console.log(deployTx.blockNumber);
+            //console.log(getCurrentBlock);
 
-            const results = await contract.getPastEvents("Minted", { fromBlock:0 , toBlock: "latest" });
+            const results = await contract.getPastEvents("Minted", { fromBlock:deployTx.blockNumber , toBlock: getCurrentBlock });
             await Promise.all(results.map(async(mint) => {
 
                 //console.log("mint : "+mint);

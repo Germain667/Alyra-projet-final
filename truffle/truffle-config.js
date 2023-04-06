@@ -33,14 +33,14 @@ module.exports = {
   },
 
   // Set default mocha options here, use special reporters, etc.
-  mocha: {
-    reporter: 'eth-gas-reporter',
-    reporterOptions : { 
-      gasPrice:1,
-      token:'ETH',
-      showTimeSpent: false,
-    }
-  },
+  // mocha: {
+  //   reporter: 'eth-gas-reporter',
+  //   reporterOptions : { 
+  //     gasPrice:1,
+  //     token:'ETH',
+  //     showTimeSpent: false,
+  //   }
+  // },
   // Configure your compilers
   compilers: {
     solc: {

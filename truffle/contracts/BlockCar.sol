@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-//import "./BlockCarLib.sol";
 
 
 /**
@@ -39,7 +38,8 @@ contract BlockCar is ERC721URIStorage, Ownable {
     struct InfosForSale {
       	uint32 mileage;
       	uint32 price;
-      	uint32 localisation;
+      	string country;
+      	string localisation;
       	string contactDetails;
     }
 
@@ -68,42 +68,12 @@ contract BlockCar is ERC721URIStorage, Ownable {
 
     /// @dev Mapping the NFT ID with the delegator
     mapping(address => uint256[]) public nftIdAndDelegator;  
-
-    /// @dev Mapping the NFT ID with informations for sale
-    //mapping(uint256 => address) delegatorList;
-
-	/// @dev An event when a user did the KYC for a car
-    event KycIsDone (uint256 nftId);
-
-    /// @dev An event when a user did is waiting for the KYC
-    event KycIsWaiting (address _address, uint256 nftId);
 	
 	/// @dev An event that registers when a user did the KYC for a car
     event Minted (address userAddress, string tokenURI, uint256 nftId, string vin, string brand, string model, string color, uint32 power, string registrationCountry, uint32 registrationDate);
 
     /// @dev An event when a car is for sale
-    event CarForSale (address _address, uint256 nftId);
-
-    /// @dev An event when a the car sell is delegated          // not sure we need this event
-    //event CarIsDelegated (address _addressOwner, address delegatedAddress, uint256 nftId);
-
-    /// @dev An event when a the car sell saled                 // not sure we need this event
-    //event CarIsSaled (address _oldAddressOwner, address _newAddressOwner, uint256 nftId);
-
-    /// @dev An event when the car is Scrapped
-    event CarIsScrapped (address _address, uint256 nftId);
-
-    /// @dev An event when the car is Stolen
-    event CarIsStolen (address _address, uint256 nftId);
-
-    /// @dev An event when the car informations are updated for sale
-    event CarInfosIsUpdatedForSale (address _address, uint256 nftId);
-
-    /// @dev An event when the car informations are updated for sale
-    event CarStatusReinitForSale (address _address, uint256 nftId);
-
-    /// @dev An event when the car informations are updated for sale
-    event StopDelegation (address _address, uint256 nftId);
+    event ChangingStatus (string status, address _address, uint256 indexed nftId, uint256 timestamp);
 
     /// @dev An event when a deposit is received
     event LogDepositReceived (address _address);
@@ -124,15 +94,15 @@ contract BlockCar is ERC721URIStorage, Ownable {
      * @return newItemId mThe Id of the NFT 
      */
     function mintCar(string memory _tokenURI, string memory _vin, string memory _brand, string memory _model, string memory _color, uint32 _power, string memory _registrationCountry, uint32 _registrationDate) public returns (uint256) {
-        require(msg.sender != address(0), "Invalid address");
-        require(bytes(_tokenURI).length > 0, "Invalid token URI");
-        require(bytes(_vin).length > 0, "Invalid VIN");
-        require(bytes(_brand).length > 0, "Invalid brand");
-        require(bytes(_model).length > 0, "Invalid mod0el");
-        require(bytes(_color).length > 0, "Invalid color");
-        require(_power > 0, "Invalid power");
-        require(bytes(_registrationCountry).length > 0, "Invalid registration country");
-        require(_registrationDate > 0, "Invalid registration date");
+        require(msg.sender != address(0), "Empty");
+        require(bytes(_tokenURI).length > 0, "Empty");
+        require(bytes(_vin).length > 0, "Empty");
+        require(bytes(_brand).length > 0, "Empty");
+        require(bytes(_model).length > 0, "Empty");
+        require(bytes(_color).length > 0, "Empty");
+        require(_power > 0, "Empty");
+        require(bytes(_registrationCountry).length > 0, "Empty");
+        require(_registrationDate > 0, "Empty");
 
         tokenIds.increment();
         uint256 newItemId = tokenIds.current();
@@ -142,7 +112,7 @@ contract BlockCar is ERC721URIStorage, Ownable {
         nftIdAndOwner[msg.sender].push(newItemId);
         
         Status memory statusIni = Status(false,false,false,false,false,false);
-        InfosForSale memory infosForSaleIni = InfosForSale(0,0,0,"");
+        InfosForSale memory infosForSaleIni = InfosForSale(0,0,"","","");
 		Car memory car = Car(_vin, _brand, _model, _color, _power, _registrationCountry, _registrationDate, "",statusIni, infosForSaleIni);
 		nftCarInfos[newItemId] = car;
 		emit Minted (msg.sender, _tokenURI, newItemId, _vin, _brand, _model, _color, _power, _registrationCountry, _registrationDate);
@@ -155,24 +125,16 @@ contract BlockCar is ERC721URIStorage, Ownable {
 
     function getNftIdsByDelegatorAddress(address _owner) external view returns (uint256[] memory) {
         return nftIdAndDelegator[_owner];
-    }
-    
-        
-        
+    }    
 
-    function getNftIdsByStatus(bool _isOnSale, bool _isDelegated, bool _isStolen,bool _isWaitingKyc,bool _isKycDone,bool _isScrapped) external view returns (uint256[] memory) {
+    function getNftIdsByOnSaleAndKycDone(bool _isOnSale, bool _isKycDone) external view returns (uint256[] memory) {
         uint256 itemId = tokenIds.current();
         uint32 count;
 
-
        // First, we count the number of cars that match the specified status
         for (uint32 i = 0; i <= itemId; i++) {
-            if ((nftCarInfos[i].status.isOnSale == _isOnSale && _isOnSale==true) ||
-                (nftCarInfos[i].status.isDelegated == _isDelegated && _isDelegated==true) ||
-                (nftCarInfos[i].status.isStolen == _isStolen && _isStolen==true) ||
-                (nftCarInfos[i].status.isWaitingKyc == _isWaitingKyc && _isWaitingKyc==true) ||
-                (nftCarInfos[i].status.isKycDone == _isKycDone && _isKycDone==true) ||
-                (nftCarInfos[i].status.isScrapped == _isScrapped && _isScrapped==true)) {
+            if ((nftCarInfos[i].status.isOnSale == _isOnSale) &&
+                (nftCarInfos[i].status.isKycDone == _isKycDone)) {
                 count++;
             }
         }
@@ -181,18 +143,12 @@ contract BlockCar is ERC721URIStorage, Ownable {
         uint32 index = 0;
 
         for (uint32 i = 0; i <= itemId; i++) {
-            if ((nftCarInfos[i].status.isOnSale == _isOnSale && _isOnSale==true) ||
-                (nftCarInfos[i].status.isDelegated == _isDelegated && _isDelegated==true) ||
-                (nftCarInfos[i].status.isStolen == _isStolen && _isStolen==true) ||
-                (nftCarInfos[i].status.isWaitingKyc == _isWaitingKyc && _isWaitingKyc==true) ||
-                (nftCarInfos[i].status.isKycDone == _isKycDone && _isKycDone==true) ||
-                (nftCarInfos[i].status.isScrapped == _isScrapped && _isScrapped==true)) {
+            if ((nftCarInfos[i].status.isOnSale == _isOnSale) &&
+                (nftCarInfos[i].status.isKycDone == _isKycDone)) {
                 Ids[index] = i;
                 index++;
             }
         }
-
-
         return Ids;
     }
 
@@ -201,8 +157,8 @@ contract BlockCar is ERC721URIStorage, Ownable {
     * @param _tokenIds The Id of the NFT 
     */
     modifier isNftOwnerOrDelegator(uint256 _tokenIds) {
-        require(ownerOf(_tokenIds)==msg.sender || (getApproved(_tokenIds)==msg.sender &&  nftCarInfos[_tokenIds].status.isDelegated == true) , 'You are not authorized');
-        require(_tokenIds <= tokenIds.current(), 'The NFT id is not correct');
+        require(ownerOf(_tokenIds)==msg.sender || (getApproved(_tokenIds)==msg.sender &&  nftCarInfos[_tokenIds].status.isDelegated == true) , 'You not authorized');
+        require(_tokenIds <= tokenIds.current(), 'id incorrect');
         _;
     }
 
@@ -211,8 +167,8 @@ contract BlockCar is ERC721URIStorage, Ownable {
     * @param _tokenIds The Id of the NFT 
     */
     modifier isNftOwner(uint256 _tokenIds) {
-        require(ownerOf(_tokenIds)==msg.sender, 'You are not the owner');
-        require(_tokenIds <= tokenIds.current(), 'The NFT id is not correct');
+        require(ownerOf(_tokenIds)==msg.sender, 'You not owner');
+        require(_tokenIds <= tokenIds.current(), 'id incorrect');
         _;
     }
 
@@ -221,10 +177,10 @@ contract BlockCar is ERC721URIStorage, Ownable {
     * @param _tokenIds The Id of the NFT 
     */
     function kycIsApproved (uint256 _tokenIds) external onlyOwner {
-        require(nftCarInfos[_tokenIds].status.isKycDone == false, 'KYC is already done');
+        require(nftCarInfos[_tokenIds].status.isKycDone == false, 'KYC done');
 		nftCarInfos[_tokenIds].status.isWaitingKyc = false;
 		nftCarInfos[_tokenIds].status.isKycDone = true;
-		emit KycIsDone(_tokenIds);
+        emit ChangingStatus("KYC done",msg.sender , _tokenIds, block.timestamp);
     }
 
     /**
@@ -232,7 +188,7 @@ contract BlockCar is ERC721URIStorage, Ownable {
     * @param _tokenIds The Id of the NFT 
     */
     function getCarNft (uint256 _tokenIds) external view returns (Car memory) {
-        require(_tokenIds <= tokenIds.current(), 'The NFT id is not correct');
+        require(_tokenIds <= tokenIds.current(), 'Id incorrect');
         return nftCarInfos[_tokenIds];
     }
 
@@ -242,7 +198,7 @@ contract BlockCar is ERC721URIStorage, Ownable {
     */
     function carIsForSale (uint256 _tokenIds) internal isNftOwnerOrDelegator (_tokenIds) {
         nftCarInfos[_tokenIds].status.isOnSale = true;
-        emit CarForSale (msg.sender, _tokenIds);
+        emit ChangingStatus("Car for sale",msg.sender, _tokenIds, block.timestamp);
     }
 
     /**
@@ -253,21 +209,22 @@ contract BlockCar is ERC721URIStorage, Ownable {
     * @param _localisation the localisation of the car
     * @param _contactDetails The details of the contact
     */
-    function setInformationsForSale (uint256 _tokenIds, uint32 _mileage, uint32 _price, uint32 _localisation, string calldata _contactDetails) internal isNftOwnerOrDelegator (_tokenIds) {
+    function setInformationsForSale (uint256 _tokenIds, uint32 _mileage, uint32 _price, string calldata _country, string calldata _localisation, string calldata _contactDetails) internal isNftOwnerOrDelegator (_tokenIds) {
         nftCarInfos[_tokenIds].infosForSale.mileage = _mileage;
         nftCarInfos[_tokenIds].infosForSale.price = _price;
+        nftCarInfos[_tokenIds].infosForSale.country = _country;
         nftCarInfos[_tokenIds].infosForSale.localisation = _localisation;
         nftCarInfos[_tokenIds].infosForSale.contactDetails = _contactDetails;
-        emit CarInfosIsUpdatedForSale (msg.sender, _tokenIds);
     }
 
-    function carIsForSaleAndSetInformationsForSale (uint256 _tokenIds, uint32 _mileage, uint32 _price, uint32 _localisation, string calldata _contactDetails) external isNftOwnerOrDelegator (_tokenIds) {
-        require(_mileage > 0, "The mileage can be 0");
-        require(_price > 0, "There is no price");
-        require(_localisation > 0, "The power is not indicated");
-        require(bytes(_contactDetails).length > 0, "Invalid color");
+    function carIsForSaleAndSetInformationsForSale (uint256 _tokenIds, uint32 _mileage, uint32 _price, string calldata _country, string calldata _localisation, string calldata _contactDetails) external isNftOwnerOrDelegator (_tokenIds) {
+        require(_mileage > 0, "Empty");
+        require(_price > 0, "Empty");
+        require(bytes(_country).length > 0, "Empty");
+        require(bytes(_localisation).length > 0, "Empty");
+        require(bytes(_contactDetails).length > 0, "Empty");
         carIsForSale(_tokenIds);
-        setInformationsForSale(_tokenIds, _mileage, _price, _localisation, _contactDetails);
+        setInformationsForSale(_tokenIds, _mileage, _price, _country, _localisation, _contactDetails);
     }
 
     /**
@@ -277,7 +234,7 @@ contract BlockCar is ERC721URIStorage, Ownable {
     function carIsStolen (uint256 _tokenIds) external isNftOwnerOrDelegator (_tokenIds) {
         nftCarInfos[_tokenIds].status.isStolen = true;
         nftCarInfos[_tokenIds].status.isOnSale = false;
-        emit CarIsStolen (msg.sender, _tokenIds);
+        emit ChangingStatus("Car stolen",msg.sender, _tokenIds, block.timestamp);
     }
 
     /**
@@ -287,18 +244,25 @@ contract BlockCar is ERC721URIStorage, Ownable {
     function carIsScrapped (uint256 _tokenIds) external isNftOwnerOrDelegator (_tokenIds) {
         nftCarInfos[_tokenIds].status.isScrapped = true;
         nftCarInfos[_tokenIds].status.isOnSale = false;
-        emit CarIsScrapped(msg.sender, _tokenIds);
+        emit ChangingStatus("Car scrapped",msg.sender, _tokenIds, block.timestamp);
     }
 
-        /**
+    /**
     * @dev Change boolean 'isScrapped' to true, this car is Scrapped
     * @param _tokenIds The Id of the NFT 
     */
-    function reinitStatusForSelling (uint256 _tokenIds) external isNftOwnerOrDelegator (_tokenIds) {
-        nftCarInfos[_tokenIds].status.isScrapped = false;
+    function stopSale (uint256 _tokenIds) external isNftOwnerOrDelegator (_tokenIds) {
+        nftCarInfos[_tokenIds].status.isOnSale = false;
+        emit ChangingStatus("Sale stoped",msg.sender, _tokenIds, block.timestamp);
+    }
+
+    /**
+    * @dev Change boolean 'isScrapped' to true, this car is Scrapped
+    * @param _tokenIds The Id of the NFT 
+    */
+    function carFound (uint256 _tokenIds) external isNftOwnerOrDelegator (_tokenIds) {
         nftCarInfos[_tokenIds].status.isStolen = false;
-        nftCarInfos[_tokenIds].status.isOnSale = true;
-        emit CarStatusReinitForSale(msg.sender, _tokenIds);
+        emit ChangingStatus("Car found",msg.sender, _tokenIds, block.timestamp);
     }
 
     /**
@@ -310,18 +274,41 @@ contract BlockCar is ERC721URIStorage, Ownable {
         approve(delegatorAddress, _tokenIds);
         nftIdAndDelegator[delegatorAddress].push(_tokenIds);
         nftCarInfos[_tokenIds].status.isDelegated = true;
-        //emit CarIsDelegated(msg.sender, delegatorAddress, _tokenIds);
+        emit ChangingStatus("Car delegated", delegatorAddress, _tokenIds, block.timestamp);
     }
 
     /**
     * @dev Change boolean 'isDelegated' to false, this car is not delegated anymore
     * @param _tokenIds The Id of the NFT 
     */
-    function stopDelegation (uint256 _tokenIds) external isNftOwner (_tokenIds) {
+    function stopDelegation (uint256 _tokenIds) external isNftOwnerOrDelegator (_tokenIds) {
         require(nftCarInfos[_tokenIds].status.isDelegated == true, "The NFT is not delegated");
+
+        address delegatorAdress = getApproved(_tokenIds);
+
         nftCarInfos[_tokenIds].status.isDelegated = false;
-        delete (nftIdAndDelegator[getApproved(_tokenIds)][_tokenIds]);
-        emit StopDelegation(msg.sender, _tokenIds);
+
+        if (nftIdAndDelegator[delegatorAdress].length == 1) {
+            nftIdAndDelegator[delegatorAdress].pop();
+        } else {
+            removeTokenIdDelegator(delegatorAdress, _tokenIds);
+        }
+
+        emit ChangingStatus("Delegation stoped",msg.sender, _tokenIds, block.timestamp);
+    }
+
+    function removeTokenIdDelegator(address _addressToDel, uint256 _tokenIds) internal {
+        uint256 length = nftIdAndDelegator[_addressToDel].length;
+        for (uint256 i = 0; i < nftIdAndDelegator[_addressToDel].length; i++) {
+            if (nftIdAndDelegator[_addressToDel][i] == _tokenIds) {
+                // Remplace l'élément à supprimer par le dernier élément du tableau
+                nftIdAndDelegator[_addressToDel][i] = nftIdAndDelegator[_addressToDel][length - 1];
+                
+                // Réduit la longueur du tableau de 1
+                nftIdAndDelegator[_addressToDel].pop();
+                break;
+            }
+        }
     }
 
     /**
@@ -332,25 +319,44 @@ contract BlockCar is ERC721URIStorage, Ownable {
         require(nftCarInfos[_tokenIds].status.isKycDone == false, "The KYC is done");
         require(nftCarInfos[_tokenIds].status.isWaitingKyc == false, "The KYC is already waiting");
         nftCarInfos[_tokenIds].status.isWaitingKyc = true;
-        emit KycIsWaiting(msg.sender, _tokenIds);
+        emit ChangingStatus("KYC asked",msg.sender, _tokenIds, block.timestamp);
     }
 
-    function testingAndTransfer (address _from, address _to, uint256 _tokenIds) internal isNftOwnerOrDelegator (_tokenIds)  {
+    function removeTokenIdNftOwner(address _addressToDel, uint256 _tokenIds) internal {
+        uint256 length = nftIdAndOwner[_addressToDel].length;
+        for (uint256 i = 0; i < nftIdAndOwner[_addressToDel].length; i++) {
+            if (nftIdAndOwner[_addressToDel][i] == _tokenIds) {
+                // Remplace l'élément à supprimer par le dernier élément du tableau
+                nftIdAndOwner[_addressToDel][i] = nftIdAndOwner[_addressToDel][length - 1];
+                
+                // Réduit la longueur du tableau de 1
+                nftIdAndOwner[_addressToDel].pop();
+                break;
+            }
+        }
+    }
+
+    function addDocumentLink(string memory _newLink, uint256 _tokenId) external isNftOwnerOrDelegator (_tokenId)  {
+        string memory currentLink = nftCarInfos[_tokenId].linkDocument;
+        if (bytes(currentLink).length == 0) {
+            nftCarInfos[_tokenId].linkDocument = _newLink;
+        } else {
+            nftCarInfos[_tokenId].linkDocument = string(abi.encodePacked(currentLink, ";", _newLink));
+        }
+        emit ChangingStatus("Document added",msg.sender, _tokenId, block.timestamp);
+    }
+
+    function testingAndTransfer (address _from, address _to, uint256 _tokenIds) internal {
         nftCarInfos[_tokenIds].status.isKycDone = false;
         nftCarInfos[_tokenIds].status.isDelegated = false;
         nftCarInfos[_tokenIds].status.isOnSale = false;
-        delete (nftIdAndOwner[_from][_tokenIds]);
-        nftIdAndOwner[_to].push(_tokenIds);
 
-    }
-
-    function addDocumentLink(string memory _newLink, uint256 _tokenIds) internal isNftOwnerOrDelegator (_tokenIds)  {
-        string memory currentLink = nftCarInfos[_tokenIds].linkDocument;
-        if (bytes(currentLink).length == 0) {
-            nftCarInfos[_tokenIds].linkDocument = _newLink;
+        if (nftIdAndOwner[_from].length == 1) {
+            nftIdAndOwner[_from].pop();
         } else {
-            nftCarInfos[_tokenIds].linkDocument = string(abi.encodePacked(currentLink, ";", _newLink));
+            removeTokenIdNftOwner(_from, _tokenIds);
         }
+        nftIdAndOwner[_to].push(_tokenIds);
     }
 
     /**
@@ -363,6 +369,7 @@ contract BlockCar is ERC721URIStorage, Ownable {
     ) public virtual override {
         testingAndTransfer(from, to, tokenId);
         _transfer(from, to, tokenId);
+        emit ChangingStatus("transfer",msg.sender, tokenId, block.timestamp);
     }
 
     /**
@@ -387,32 +394,17 @@ contract BlockCar is ERC721URIStorage, Ownable {
     ) public virtual override {
         testingAndTransfer(from, to, tokenId);
         _safeTransfer(from, to, tokenId, data);
+        emit ChangingStatus("transfer",msg.sender, tokenId, block.timestamp);
     }
 
-    function sellNftAndTransferValueToOwner(uint256 _tokenIds) external payable  {
+    function sellNftAndTransferValueToOwner(uint256 _tokenId) external payable  {
         uint256 valueSend               = msg.value;
-        address ownerAddress            = ownerOf(_tokenIds);
-        safeTransferFrom(ownerOf(_tokenIds),msg.sender,_tokenIds);
+        address ownerAddress            = ownerOf(_tokenId);
+        safeTransferFrom(ownerOf(_tokenId),msg.sender,_tokenId);
         (bool sent, )                   = payable(ownerAddress).call{value: valueSend}("");
         require(sent, unicode"transfer didn't work");
+        emit ChangingStatus("transfer with amount",msg.sender, _tokenId, block.timestamp);
     }
-
-    function sellNftAndTransferValueToOwnerAndDelegator(uint256 _tokenIds) external payable  {
-        uint256 valueSendForOwner       = (msg.value*9)/10;
-        uint256 valueSendForDelegator   = msg.value/10;
-        address ownerAddress            = ownerOf(_tokenIds);
-        address delegatorAddress        = getApproved(_tokenIds);
-
-        safeTransferFrom(ownerOf(_tokenIds),msg.sender,_tokenIds);
-
-        (bool sent1, )                   = payable(ownerAddress).call{value: valueSendForOwner}("");
-        require(sent1, unicode"transfer didn't work");
-        
-        (bool sent2, )                   = payable(delegatorAddress).call{value: valueSendForDelegator}("");
-        require(sent2, unicode"transfer didn't work");
-    
-    }
-
 
     fallback() external payable { 
         require(msg.data.length == 0);
@@ -428,5 +420,4 @@ contract BlockCar is ERC721URIStorage, Ownable {
         (bool sent, )                   = payable(msg.sender).call{value: address(this).balance}("");
         require(sent, unicode"transfer didn't work");
     }
-    //add others documents
 }

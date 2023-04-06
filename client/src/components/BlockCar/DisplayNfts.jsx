@@ -75,7 +75,7 @@ function DisplayNfts(props) {
       shadow="lg"
       position="relative">
 
-      {(!data.mergeObject.status.isKycDone && !data.mergeObject.status.isWaitingKyc) && (
+      {(!data.mergeObject.status.isKycDone && !data.mergeObject.status.isWaitingKyc && !data.mergeObject.status.isStolen && !data.mergeObject.status.isScrapped) && (
         <Circle
           size="10px"
           position="absolute"
@@ -93,7 +93,7 @@ function DisplayNfts(props) {
           bg="orange.500"
         />
       )}
-      {(data.mergeObject.status.isKycDone && !data.mergeObject.status.isOnSale) && (
+      {(data.mergeObject.status.isKycDone && !data.mergeObject.status.isOnSale && !data.mergeObject.status.isStolen && !data.mergeObject.status.isScrapped) && (
         <Circle
           size="10px"
           position="absolute"
@@ -102,13 +102,31 @@ function DisplayNfts(props) {
           bg="blue.500"
         />
       )}
-      {(data.mergeObject.status.isKycDone && data.mergeObject.status.isOnSale) && (
+      {(data.mergeObject.status.isKycDone && data.mergeObject.status.isOnSale && !data.mergeObject.status.isStolen && !data.mergeObject.status.isScrapped) && (
         <Circle
           size="10px"
           position="absolute"
           top={2}
           right={2}
           bg="green.500"
+        />
+      )}
+      {(data.mergeObject.status.isStolen) && (
+        <Circle
+          size="30px"
+          position="absolute"
+          top={2}
+          right={2}
+          bg="orange.500"
+        />
+      )}
+      {(data.mergeObject.status.isScrapped) && (
+        <Circle
+          size="30px"
+          position="absolute"
+          top={2}
+          right={2}
+          bg="red.500"
         />
       )}
       <Image
@@ -154,7 +172,10 @@ function DisplayNfts(props) {
             as="h4"
             lineHeight="tight"
             isTruncated>
-            Année d'immatriculation : {data.mergeObject.registrationDate}
+
+            Date d'immatriculation : {data.mergeObject.registrationDate.length===8 ? `${data.mergeObject.registrationDate.slice(0, 2)}/${data.mergeObject.registrationDate.slice(2, 4)}/${data.mergeObject.registrationDate.slice(4, 8)}`
+                                        : `${data.mergeObject.registrationDate.slice(0, 1)}/${data.mergeObject.registrationDate.slice(1, 3)}/${data.mergeObject.registrationDate.slice(3, 7)}`}
+   
           </Box>
         </Flex>
         <Flex mt="1" justifyContent="space-between" alignContent="center">

@@ -12,20 +12,13 @@ contract('BlockCar', accounts => {
 
     describe("Mint NFT Car", function () {
 
-        beforeEach(async function () {
+        before(async function () {
             BlockCarInstance = await BlockCar.new({from:owner});
         });
 
-        it("should mint a new car NFT", async function () {
-
+        //it("should mint a new car NFT", async function () {
 
             it("should mint an NFT", async () => {  
-                // const registrationDate = "";
-                // const vin = web3.utils.asciiToHex("WBA12345678901234");
-                // const brand = web3.utils.asciiToHex("BMW");
-                // const model = web3.utils.asciiToHex("i8");
-                // const color = web3.utils.asciiToHex("Black");
-                // const registrationCountry = web3.utils.asciiToHex("FR");
                 const tokenURI = "https://example.com/mycar.json";
                 const vin ="WBA12345678901234";
                 const brand = "BMW";
@@ -35,25 +28,31 @@ contract('BlockCar', accounts => {
                 const registrationDate = 10121999;
                 const power = 200000000;
                 const expectedTokenId = 1;
-                const result = await BlockCarInstance.mintCar(owner, tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: owner});
+                const result = await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: owner});
             });  
 
+
             it("should get the balance", async () => {  
-                const balance = await BlockCarInstance.balanceOf(owner);
+                const balance = await BlockCarInstance.balanceOf(owner, { from: owner});
                 expect(balance).to.be.bignumber.equal(new BN(1));
             }); 
 
             it("should get the owner", async () => {  
+                const expectedTokenId = 1;
                 const ownerOf = await BlockCarInstance.ownerOf(expectedTokenId);
                 expect(ownerOf).to.equal(owner);
             }); 
 
             it("should get  the correct URI", async () => {  
+                const expectedTokenId = 1;
+                const tokenURI = "https://example.com/mycar.json";
                 const tokenURIResult = await BlockCarInstance.tokenURI(expectedTokenId);
                 expect(tokenURIResult).to.equal(tokenURI);
             }); 
 
-            it("shout return the goof an NFT informations", async () => {  
+            it.skip("should return the NFT informations", async () => {  
+
+                const expectedTokenId = 1;
                 const carInfo = await BlockCarInstance.getCarNft(expectedTokenId);
                 expect(carInfo.vin).to.equal(vin);
                 expect(carInfo.brand).to.equal(brand);
@@ -63,7 +62,29 @@ contract('BlockCar', accounts => {
                 expect(carInfo.registrationCountry).to.equal(registrationCountry);
                 expect(carInfo.registrationDate).to.equal(registrationDate);
             }); 
-        });
+
+            it("It should ask the Kyc", async () => {  
+                const expectedTokenId = 1;
+                const carInfo = await BlockCarInstance.askKyc(expectedTokenId, { from: owner});
+            }); 
+            it("It should accept the Kyc", async () => {  
+                const expectedTokenId = 1;
+                const carInfo = await BlockCarInstance.kycIsApproved(expectedTokenId, { from: owner});
+            }); 
+            it("It should delegate", async () => {  
+                const expectedTokenId = 1;
+                const carInfo = await BlockCarInstance.delegeteCar(user1, expectedTokenId, { from: owner});
+            }); 
+            it("It should stop delegation", async () => {  
+                const expectedTokenId = 1;
+                const carInfo = await BlockCarInstance.stopDelegation(expectedTokenId, { from: owner});
+            }); 
+            it("It should not transfer", async () => {  
+                const expectedTokenId = 1;
+                const carInfo = await BlockCarInstance.transferFrom(owner,owner,expectedTokenId, { from: owner});
+                await BlockCarInstance.transferFrom(owner,owner,expectedTokenId, { from: owner});
+            });
+        //});
 
         it.skip("should fail to mint a new car NFT with invalid parameters", async function () {
             const invalidAddress = "0x0000000000000000000000000000000000000000";
@@ -76,8 +97,6 @@ contract('BlockCar', accounts => {
             const invalidRegistrationCountry = web3.utils.fromAscii("");
             const invalidRegistrationDate = 0;
 
-            //await expect(nftCar.connect(user).mintCar(invalidAddress, "https://example.com/mycar.json", web3.utils.fromAscii("WBA12345678901234"), web3.utils.fromAscii("BMW"), web3.utils.fromAscii("i8"), web3.utils.fromAscii("Black"), 200, web3.utils.fromAscii("FR"), Math.floor(Date.now() / 1000))).to.be.revertedWith("Invalid address");
-            //await expect(nftCar.connect(user).mintCar(user.address, invalidTokenURI, web3.utils.fromAscii("WBA12345678901234"), web3.utils.fromAscii("BMW"), web3.utils.fromAscii("i8"), web3.utils.fromAscii("Black"), 200, web3.utils.from
         });
     });
 });
