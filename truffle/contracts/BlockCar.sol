@@ -119,6 +119,11 @@ contract BlockCar is ERC721URIStorage, Ownable {
         return newItemId;
     }
 
+    function getCurrentId() external view returns(uint256) {
+        //uint256 currentItemId = tokenIds.current();
+        return tokenIds.current();
+    }
+
     function getNftIdsByAddress(address _owner) external view returns (uint256[] memory) {
         return nftIdAndOwner[_owner];
     }
@@ -270,7 +275,7 @@ contract BlockCar is ERC721URIStorage, Ownable {
     * @param _tokenIds The Id of the NFT 
     */
     function delegeteCar (address delegatorAddress, uint256 _tokenIds) external isNftOwner (_tokenIds) {
-        require(nftCarInfos[_tokenIds].status.isKycDone == true, "The KYC is not approved");
+        require(nftCarInfos[_tokenIds].status.isKycDone == true, "KYC not approved");
         approve(delegatorAddress, _tokenIds);
         nftIdAndDelegator[delegatorAddress].push(_tokenIds);
         nftCarInfos[_tokenIds].status.isDelegated = true;
@@ -282,7 +287,7 @@ contract BlockCar is ERC721URIStorage, Ownable {
     * @param _tokenIds The Id of the NFT 
     */
     function stopDelegation (uint256 _tokenIds) external isNftOwnerOrDelegator (_tokenIds) {
-        require(nftCarInfos[_tokenIds].status.isDelegated == true, "The NFT is not delegated");
+        require(nftCarInfos[_tokenIds].status.isDelegated == true, "NFT not delegated");
 
         address delegatorAdress = getApproved(_tokenIds);
 
@@ -316,8 +321,8 @@ contract BlockCar is ERC721URIStorage, Ownable {
     * @param _tokenIds The Id of the NFT 
     */
     function askKyc (uint256 _tokenIds) external isNftOwner (_tokenIds) {
-        require(nftCarInfos[_tokenIds].status.isKycDone == false, "The KYC is done");
-        require(nftCarInfos[_tokenIds].status.isWaitingKyc == false, "The KYC is already waiting");
+        require(nftCarInfos[_tokenIds].status.isKycDone == false, "KYC is done");
+        require(nftCarInfos[_tokenIds].status.isWaitingKyc == false, "KYC already waiting");
         nftCarInfos[_tokenIds].status.isWaitingKyc = true;
         emit ChangingStatus("KYC asked",msg.sender, _tokenIds, block.timestamp);
     }

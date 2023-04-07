@@ -9,96 +9,107 @@ contract('BlockCar', accounts => {
     const user3 = accounts[3];
     const user4 = accounts[4];
     const user5 = accounts[5];
+    const address0 = "0x0000000000000000000000000000000000000000";
+
+    //-------------------- Function mintCar-------------------------//
 
     describe("Mint NFT Car", function () {
 
-        before(async function () {
-            BlockCarInstance = await BlockCar.new({from:owner});
+        const tokenURI = "https://gateway.pinata.cloud/ipfs/QmWn234qiACpaaEm4rEX7qWZJmNqGy4mefQZVaSBZkSsWe";
+        const vin ="WBA12345678901234";
+        const brand = "BMW";
+        const model = "i8";
+        const color = "Black";
+        const registrationCountry = "France";
+        const registrationDate = 10121999;
+        const power = 200;
+
+        const tokenURIEmpty = "";
+        const vinEmpty ="";
+        const brandEmpty = "";
+        const modelEmpty = "";
+        const colorEmpty = "";
+        const registrationCountryEmpty = "";
+        const registrationDateEmpty = 0;
+        const powerEmpty = 0;
+
+        const expectedTokenId = 1;
+        const expectedTokenId2 = 2;
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:user1});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
         });
 
-        //it("should mint a new car NFT", async function () {
+        it("should return the NFT informations", async () => {  
+            const carInfo = await BlockCarInstance.getCarNft(expectedTokenId);
+            expect(carInfo.vin).to.equal(vin);
+            expect(carInfo.brand).to.equal(brand);
+            expect(carInfo.model).to.equal(model);
+            expect(carInfo.color).to.equal(color);
+            expect(carInfo.power).to.be.bignumber.equal(new BN(power));
+            expect(carInfo.registrationCountry).to.equal(registrationCountry);
+            expect(carInfo.registrationDate).to.be.bignumber.equal(new BN(registrationDate));
 
-            it("should mint an NFT", async () => {  
-                const tokenURI = "https://example.com/mycar.json";
-                const vin ="WBA12345678901234";
-                const brand = "BMW";
-                const model = "i8";
-                const color = "Black";
-                const registrationCountry = "FR";
-                const registrationDate = 10121999;
-                const power = 200000000;
-                const expectedTokenId = 1;
-                const result = await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: owner});
-            });  
+            expect(carInfo.status.isOnSale).to.be.false;
+            expect(carInfo.status.isDelegated).to.be.false;
+            expect(carInfo.status.isStolen).to.be.false;
+            expect(carInfo.status.isWaitingKyc).to.be.false;
+            expect(carInfo.status.isKycDone).to.be.false;
+            expect(carInfo.status.isScrapped).to.be.false;
 
+            //expect(carInfo.status.mileage).to.be.bignumber.equal(new BN(0));
+            expect(carInfo.status.price).to.be.bignumber.equal(new BN(0));
+            //expect(carInfo.status.country).to.equal("");
+            //expect(carInfo.status.localisation).to.equal("");
+            //expect(carInfo.status.contactDetails).to.equal("");
 
-            it("should get the balance", async () => {  
-                const balance = await BlockCarInstance.balanceOf(owner, { from: owner});
-                expect(balance).to.be.bignumber.equal(new BN(1));
-            }); 
+        }); 
 
-            it("should get the owner", async () => {  
-                const expectedTokenId = 1;
-                const ownerOf = await BlockCarInstance.ownerOf(expectedTokenId);
-                expect(ownerOf).to.equal(owner);
-            }); 
-
-            it("should get  the correct URI", async () => {  
-                const expectedTokenId = 1;
-                const tokenURI = "https://example.com/mycar.json";
-                const tokenURIResult = await BlockCarInstance.tokenURI(expectedTokenId);
-                expect(tokenURIResult).to.equal(tokenURI);
-            }); 
-
-            it.skip("should return the NFT informations", async () => {  
-
-                const expectedTokenId = 1;
-                const carInfo = await BlockCarInstance.getCarNft(expectedTokenId);
-                expect(carInfo.vin).to.equal(vin);
-                expect(carInfo.brand).to.equal(brand);
-                expect(carInfo.model).to.equal(model);
-                expect(carInfo.color).to.equal(color);
-                expect(carInfo.power).to.equal(power);
-                expect(carInfo.registrationCountry).to.equal(registrationCountry);
-                expect(carInfo.registrationDate).to.equal(registrationDate);
-            }); 
-
-            it("It should ask the Kyc", async () => {  
-                const expectedTokenId = 1;
-                const carInfo = await BlockCarInstance.askKyc(expectedTokenId, { from: owner});
-            }); 
-            it("It should accept the Kyc", async () => {  
-                const expectedTokenId = 1;
-                const carInfo = await BlockCarInstance.kycIsApproved(expectedTokenId, { from: owner});
-            }); 
-            it("It should delegate", async () => {  
-                const expectedTokenId = 1;
-                const carInfo = await BlockCarInstance.delegeteCar(user1, expectedTokenId, { from: owner});
-            }); 
-            it("It should stop delegation", async () => {  
-                const expectedTokenId = 1;
-                const carInfo = await BlockCarInstance.stopDelegation(expectedTokenId, { from: owner});
-            }); 
-            it("It should not transfer", async () => {  
-                const expectedTokenId = 1;
-                const carInfo = await BlockCarInstance.transferFrom(owner,owner,expectedTokenId, { from: owner});
-                await BlockCarInstance.transferFrom(owner,owner,expectedTokenId, { from: owner});
-            });
-        //});
-
-        it.skip("should fail to mint a new car NFT with invalid parameters", async function () {
-            const invalidAddress = "0x0000000000000000000000000000000000000000";
-            const invalidTokenURI = "";
-            const invalidVIN = web3.utils.fromAscii("");
-            const invalidBrand = web3.utils.fromAscii("");
-            const invalidModel = web3.utils.fromAscii("");
-            const invalidColor = web3.utils.fromAscii("");
-            const invalidPower = 0;
-            const invalidRegistrationCountry = web3.utils.fromAscii("");
-            const invalidRegistrationDate = 0;
-
-        });
+ 
     });
+
+    describe.skip("Mint NFT Car and testing some function from ERC721", function () {
+        //not really needed to test the ERC721 function
+        const tokenURI = "https://gateway.pinata.cloud/ipfs/QmWn234qiACpaaEm4rEX7qWZJmNqGy4mefQZVaSBZkSsWe";
+        const vin ="WBA12345678901234";
+        const brand = "BMW";
+        const model = "i8";
+        const color = "Black";
+        const registrationCountry = "France";
+        const registrationDate = 10121999;
+        const power = 200;
+
+        const tokenId = 1;
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:user1});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+        });
+
+        it("should get the balance", async () => {  
+            const balance = await BlockCarInstance.balanceOf(user1, { from: user1});
+            expect(balance).to.be.bignumber.equal(new BN(1));
+        }); 
+
+        it("should mint a second NFT and get the good balance", async () => {  
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            const balance = await BlockCarInstance.balanceOf(user1, { from: user1});
+            expect(balance).to.be.bignumber.equal(new BN(2));
+        });  
+
+        it("should get the owner", async () => {  
+            const ownerOf = await BlockCarInstance.ownerOf(tokenId);
+            expect(ownerOf).to.equal(user1);
+        }); 
+
+        it("should get  the correct URI", async () => {  
+            const tokenURIResult = await BlockCarInstance.tokenURI(tokenId);
+            expect(tokenURIResult).to.equal(tokenURI);
+        }); 
+
+    });
+
 });
 /*
     let VotingInstance;

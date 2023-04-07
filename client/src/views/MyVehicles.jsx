@@ -83,8 +83,8 @@ function MyVehicles() {
 
           await contract.methods.mintCar(entireURI,vinNumber,brand,model,color,power,countryRegistration,date).send({ from: accounts[0] });
 
-          console.log(response)
-          console.log("entireURI : "+entireURI)
+          //console.log(response)
+          //console.log("entireURI : "+entireURI)
 
           handleReset();
           alert('Formulaire envoyé');
