@@ -1,9 +1,7 @@
 import { Button, Flex, FormControl, FormLabel, Heading, Input, Stack, useColorModeValue  } from '@chakra-ui/react';
 import React, { useState } from "react";
-//import { SmallCloseIcon, Avatar, AvatarBadge, IconButton, Center } from '@chakra-ui/icons';
 import useEth from '../contexts/EthContext/useEth';
 import axios from 'axios';
-//import { Navigate } from 'react-router-dom';
 
 import { useDisplayNfts } from "../hooks/useDisplayNfts";
 import { useDisplayNfts4Delegator } from "../hooks/useDisplayNfts4Delegator";
@@ -13,7 +11,7 @@ import DatePicker from "react-datepicker";
 import { registerLocale } from  "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import fr from 'date-fns/locale/fr';
-registerLocale('fr', fr)
+registerLocale('fr', fr);
 
 
 function MyVehicles() {
@@ -23,11 +21,11 @@ function MyVehicles() {
     const { idNfts } = useDisplayNfts(accounts);  
     const { idNfts4Delegator } = useDisplayNfts4Delegator(accounts);  
     const [file, setFile] = useState();
-    const [fileName, setFileName] = useState("");
+    //const [fileName, setFileName] = useState("");
 
     const handleFileChange = (e) => {
       setFile(e.target.files[0]);
-      setFileName(e.target.files[0].name);
+      //setFileName(e.target.files[0].name);
     };
 
     const handleSubmit = async () => {
@@ -52,29 +50,44 @@ function MyVehicles() {
             alert('Veuillez remplir tous les champs');
         } else {
 
+          // const formData = new FormData()
+          // formData.append("image", file)
+          // formData.append("fileName", fileName)
+          // const result = await axios.post('http://localhost:8082/images', formData, { headers: {'Content-Type': 'multipart/form-data'}})
+          // const entireURI = result.data.entireURI;
+          // await contract.methods.mintCar(entireURI,vinNumber,brand,model,color,power,countryRegistration,date).send({ from: accounts[0] });
 
-          const formData = new FormData()
-          formData.append("image", file)
-          //formData.append("description", fileName)
-          formData.append("fileName", fileName)
+
+          const formData = new FormData();
+          formData.append("file", file);
+
+          //console.log('file : '+file);
+          //console.log('fileName : '+fileName);
+
+          const url =  "https://api.pinata.cloud/pinning/pinFileToIPFS";
       
-          //console.log("image : ", file);
-          //console.log("filename : ", fileName);
-    
-          const result = await axios.post('http://localhost:8082/images', formData, { headers: {'Content-Type': 'multipart/form-data'}})
-          const entireURI = result.data.entireURI;
-          
-          //console.log(result);
-          //console.log("uri : "+result.data.entireURI);
-          //console.log("imageName" + result.data.imageName);
+          const response = await axios.post(
+              url,
+              formData,
+              {
+                  maxContentLength: "Infinity",
+                  headers: {
+                      "Content-Type": `multipart/form-data;boundary=${formData._boundary}`, 
+                      'pinata_api_key': "f9ba4359e1a9dc8c4a4b",
+                      'pinata_secret_api_key': "69fbf7eec316e2cfcc01e4bcbe317fc39882fabab65887e608438de192befb2e"
+                  }
+              }
+          )
+          const prefixPinata = "https://gateway.pinata.cloud/ipfs/";
+          const entireURI = prefixPinata.concat(response.data.IpfsHash);
 
           await contract.methods.mintCar(entireURI,vinNumber,brand,model,color,power,countryRegistration,date).send({ from: accounts[0] });
 
+          console.log(response)
+          console.log("entireURI : "+entireURI)
+
           handleReset();
-          //setRefresh(true);
           alert('Formulaire envoyé');
-          //return <Navigate to="/MyVehicles" />;
-          //window.location.reload();
         }
       };
 

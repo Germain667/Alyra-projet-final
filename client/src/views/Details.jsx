@@ -2,8 +2,6 @@ import { Box, Container, Stack, Text, Image, Flex, Button, Heading, SimpleGrid, 
     AlertDialog, AlertDialogOverlay, AlertDialogContent, AlertDialogHeader, AlertDialogCloseButton, AlertDialogBody, AlertDialogFooter } from '@chakra-ui/react';
 import { FormControl, FormLabel, Input } from '@chakra-ui/react';
 import { useNavigate , useLocation  } from 'react-router-dom';
-//import DisplayNfts from "../components/BlockCar/DisplayNfts";
-//import { useDisplayNfts4Admin } from "../hooks/useDisplayNfts4Admin";
 import useEth from '../contexts/EthContext/useEth';
 import React, { useState, useEffect } from 'react';
 import { useDisclosure } from "@chakra-ui/react";
@@ -26,7 +24,7 @@ function Details() {
     const id = searchParams.get('id');
     const navigate  = useNavigate();
     const [file, setFile] = useState();
-    const [fileName, setFileName] = useState("");
+    //const [fileName, setFileName] = useState("");
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const cancelRef = React.useRef();
@@ -170,24 +168,56 @@ function Details() {
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
-        setFileName(e.target.files[0].name);
+        //setFileName(e.target.files[0].name);
       };
 
     const addDocument = async (id) => {
 
-        const formData = new FormData()
-        formData.append("document", file)
-        //formData.append("description", fileName)
-        formData.append("fileName", fileName)
+        //const formData = new FormData()
+        //formData.append("document", file)
+        //formData.append("fileName", fileName)
     
         //console.log("image : ", file);
         //console.log("filename : ", fileName);
 
-        const result = await axios.post('http://localhost:8082/documents', formData, { headers: {'Content-Type': 'multipart/form-data'}})
-        console.log(result);
-        const entireURI = result.data.entireURI;
+        //const result = await axios.post('http://localhost:8082/documents', formData, { headers: {'Content-Type': 'multipart/form-data'}})
+        //const entireURI = result.data.entireURI;
+        //await contract.methods.addDocumentLink(entireURI, id).send({ from: accounts[0] });
 
+
+        
+
+
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        //console.log('file : '+file);
+        //console.log('fileName : '+fileName);
+
+        const url =  "https://api.pinata.cloud/pinning/pinFileToIPFS";
+    
+        const response = await axios.post(
+            url,
+            formData,
+            {
+                maxContentLength: "Infinity",
+                headers: {
+                    "Content-Type": `multipart/form-data;boundary=${formData._boundary}`, 
+                    'pinata_api_key': "f9ba4359e1a9dc8c4a4b",
+                    'pinata_secret_api_key': "69fbf7eec316e2cfcc01e4bcbe317fc39882fabab65887e608438de192befb2e"
+                }
+            }
+        )
+        const prefixPinata = "https://gateway.pinata.cloud/ipfs/";
+        const entireURI = prefixPinata.concat(response.data.IpfsHash);
         await contract.methods.addDocumentLink(entireURI, id).send({ from: accounts[0] });
+
+
+
+
+
+
         onClose5();
         setRefresh(true);
     }

@@ -19,11 +19,7 @@ const prefixPinata = "https://gateway.pinata.cloud/ipfs/";
 // Utilise le middleware cors
 app.use(cors({ origin: 'http://localhost:8080' }));
 
-
-// app.use('/images', express.static('images'))
 app.get('/images/:imageName', (req, res) => {
-  // do a bunch of if statements to make sure the user is 
-  // authorized to view this image, then
 
   const imageName = req.params.imageName
   const readStream = fs.createReadStream(`images/${imageName}`)

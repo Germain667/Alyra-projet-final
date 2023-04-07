@@ -20,8 +20,8 @@ module.exports = {
       provider : function() {
               return new HDWalletProvider(
                 `${process.env.MNEMONIC}`,
-                `https://mumbai.infura.io/v3/${process.env.INFURA_ID}`)},
-      network_id : 5,
+                `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_ID}`)},
+      network_id : 80001,
     }, 
     main:{
       provider : function() {

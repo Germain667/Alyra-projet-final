@@ -127,14 +127,14 @@ contract BlockCar is ERC721URIStorage, Ownable {
         return nftIdAndDelegator[_owner];
     }    
 
-    function getNftIdsByOnSaleAndKycDone(bool _isOnSale, bool _isKycDone) external view returns (uint256[] memory) {
+    function getNftIdsByOnSaleAndKycDone() external view returns (uint256[] memory) {
         uint256 itemId = tokenIds.current();
         uint32 count;
 
        // First, we count the number of cars that match the specified status
         for (uint32 i = 0; i <= itemId; i++) {
-            if ((nftCarInfos[i].status.isOnSale == _isOnSale) ||
-                (nftCarInfos[i].status.isKycDone == _isKycDone)) {
+            if ((nftCarInfos[i].status.isOnSale == true) &&
+                (nftCarInfos[i].status.isKycDone == true)) {
                 count++;
             }
         }
@@ -143,8 +143,8 @@ contract BlockCar is ERC721URIStorage, Ownable {
         uint32 index = 0;
 
         for (uint32 i = 0; i <= itemId; i++) {
-            if ((nftCarInfos[i].status.isOnSale == _isOnSale) ||
-                (nftCarInfos[i].status.isKycDone == _isKycDone)) {
+            if ((nftCarInfos[i].status.isOnSale == true) &&
+                (nftCarInfos[i].status.isKycDone == true)) {
                 Ids[index] = i;
                 index++;
             }
