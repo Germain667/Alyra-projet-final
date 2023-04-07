@@ -47876,10 +47876,216 @@
   },
   "networks": {
     "80001": {
-      "events": {},
+      "events": {
+        "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "approved",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "Approval",
+          "type": "event"
+        },
+        "0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "operator",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "bool",
+              "name": "approved",
+              "type": "bool"
+            }
+          ],
+          "name": "ApprovalForAll",
+          "type": "event"
+        },
+        "0xeb41bb939756ad181f097f7e48b18e54ec12e25331e6d6855ca98fca7003c5de": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "status",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "_address",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "nftId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "timestamp",
+              "type": "uint256"
+            }
+          ],
+          "name": "ChangingStatus",
+          "type": "event"
+        },
+        "0x15382559391789f1865e10e9c8b51327a9cb0381eae89973ada229e7a78c08f3": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "_address",
+              "type": "address"
+            }
+          ],
+          "name": "LogDepositReceived",
+          "type": "event"
+        },
+        "0x9d9e037da80b359004ae7c185bb38ec26e586e28db82390fd43ec2664e105868": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "userAddress",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "tokenURI",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "nftId",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "vin",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "brand",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "model",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "color",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint32",
+              "name": "power",
+              "type": "uint32"
+            },
+            {
+              "indexed": false,
+              "internalType": "string",
+              "name": "registrationCountry",
+              "type": "string"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint32",
+              "name": "registrationDate",
+              "type": "uint32"
+            }
+          ],
+          "name": "Minted",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "from",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "to",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            }
+          ],
+          "name": "Transfer",
+          "type": "event"
+        }
+      },
       "links": {},
-      "address": "0x599A745cA80960aB2eBD72e6BE8808B4aA48309d",
-      "transactionHash": "0xc28a8d7aa47c6b6902742b6e5da8c4faca64b0f35139cf4db848c6c3aabd1a93"
+      "address": "0xcee60a114392dA3E488B7Cf5d0Df2b386209CfD0",
+      "transactionHash": "0x61983d2bea3169d392ff932ee5adfd0505b9942c24ecf6ff0498046ee0338224"
     },
     "1680806975982": {
       "events": {
@@ -48101,7 +48307,7 @@
     }
   },
   "schemaVersion": "3.4.13",
-  "updatedAt": "2023-04-07T11:37:02.521Z",
+  "updatedAt": "2023-04-07T12:24:32.745Z",
   "networkType": "ethereum",
   "devdoc": {
     "author": "Germain Winckel",
