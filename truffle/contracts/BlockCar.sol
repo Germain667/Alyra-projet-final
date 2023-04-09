@@ -149,7 +149,7 @@ contract BlockCar is ERC721URIStorage, Ownable {
     * @dev Returns an array of NFT of all NFT which have status isOnSale to true
     * @return Ids[] array of NFT IDs.
     */
-    function getNftIdsByOnSaleAndKycDone() external view returns (uint256[] memory) {
+    function getNftIdsByOnSale() external view returns (uint256[] memory) {
         uint256 itemId = tokenIds.current();
         uint32 count;
 
