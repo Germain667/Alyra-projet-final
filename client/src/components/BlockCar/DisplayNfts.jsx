@@ -2,11 +2,7 @@ import useEth from "../../contexts/EthContext/useEth";
 import React, { useState, useEffect } from "react";
 import { useIsOwner } from "../../hooks/useIsOwner";
 import { Link } from 'react-router-dom';
-
 import {Flex, Circle, Box, Image, Badge, Button} from '@chakra-ui/react';
-//import {Icon, chakra, Tooltip } from '@chakra-ui/react';
-//import { FiShoppingCart } from 'react-icons/fi';
-
 
 function DisplayNfts(props) {
   const { state: { contract, accounts } } = useEth();
@@ -14,8 +10,6 @@ function DisplayNfts(props) {
   const [nfts, setNfts] = useState([]);
   const { isOwner } = useIsOwner(accounts);
   const [refresh, setRefresh] = useState(false);
-
-  //console.log(MyPage);
 
   useEffect(() => {
     const fetchNfts = async () => {
@@ -25,18 +19,8 @@ function DisplayNfts(props) {
         for (const id of myData) {
           const nft = await contract.methods.getCarNft(id).call({ from: accounts[0] });
           const _tokenURI = await contract.methods.tokenURI(id).call({ from: accounts[0] });
-
-          //console.log("_tokenURI : "+_tokenURI);
-
-          // fetch(_tokenURI)
-          // .then(response => response.json())
-          // .then(data => console.log(data))
-          // .catch(error => console.error(error))
-
-
           const mergeObject = { ...nft, _tokenURI, id };
           nfts.push({ mergeObject });
-          //console.log(mergeObject);
         }
       }
 
@@ -63,8 +47,6 @@ function DisplayNfts(props) {
     <Flex p={50} w="full" alignItems="center" justifyContent="center" flexWrap="wrap">
       {nfts.length ? nfts.map((data) => (
     <Box 
-      //onClick={() => console.log(data)}
-      //bg={useColorModeValue('white', 'gray.800')}
       key={data.mergeObject.vin}
       maxW="sm"
       marginBottom="10px"
@@ -193,7 +175,7 @@ function DisplayNfts(props) {
         <Flex justifyContent="space-between" alignContent="center">
           <Box fontSize="2xl" color={('gray.800', 'white')}>
             <Box as="span" color={'gray.600'} fontSize="lg">
-             Prix : {data.mergeObject.infosForSale.price} ETH 
+             Prix : {data.mergeObject.infosForSale.price/1000000} ETH 
             </Box>
           </Box>
         </Flex>

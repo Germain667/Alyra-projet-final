@@ -11,38 +11,29 @@ contract('BlockCar', accounts => {
     const user5 = accounts[5];
     const address0 = "0x0000000000000000000000000000000000000000";
 
-    //-------------------- Function mintCar-------------------------//
+    const tokenURI = "https://gateway.pinata.cloud/ipfs/QmWn234qiACpaaEm4rEX7qWZJmNqGy4mefQZVaSBZkSsWe";
+    const vin ="WBA12345678901234";
+    const brand = "BMW";
+    const model = "i8";
+    const color = "Black";
+    const registrationCountry = "France";
+    const registrationDate = 10121999;
+    const power = 200;
+    const expectedTokenId1 = 1;
+    const expectedTokenId2 = 2;
+    const expectedTokenId3 = 3;
+
+    //-------------------- Function mintCar and getCarNft -------------------------//
 
     describe("Mint NFT Car", function () {
 
-        const tokenURI = "https://gateway.pinata.cloud/ipfs/QmWn234qiACpaaEm4rEX7qWZJmNqGy4mefQZVaSBZkSsWe";
-        const vin ="WBA12345678901234";
-        const brand = "BMW";
-        const model = "i8";
-        const color = "Black";
-        const registrationCountry = "France";
-        const registrationDate = 10121999;
-        const power = 200;
-
-        const tokenURIEmpty = "";
-        const vinEmpty ="";
-        const brandEmpty = "";
-        const modelEmpty = "";
-        const colorEmpty = "";
-        const registrationCountryEmpty = "";
-        const registrationDateEmpty = 0;
-        const powerEmpty = 0;
-
-        const expectedTokenId = 1;
-        const expectedTokenId2 = 2;
-
         beforeEach(async function () {
-            BlockCarInstance = await BlockCar.new({from:user1});
-            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            BlockCarInstance = await BlockCar.new({from:owner});
         });
 
-        it("should return the NFT informations", async () => {  
-            const carInfo = await BlockCarInstance.getCarNft(expectedTokenId);
+        it("should mint a new NFT with the correct metadata and car information", async () => {  
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
             expect(carInfo.vin).to.equal(vin);
             expect(carInfo.brand).to.equal(brand);
             expect(carInfo.model).to.equal(model);
@@ -58,32 +49,88 @@ contract('BlockCar', accounts => {
             expect(carInfo.status.isKycDone).to.be.false;
             expect(carInfo.status.isScrapped).to.be.false;
 
-            //expect(carInfo.status.mileage).to.be.bignumber.equal(new BN(0));
-            expect(carInfo.status.price).to.be.bignumber.equal(new BN(0));
-            //expect(carInfo.status.country).to.equal("");
-            //expect(carInfo.status.localisation).to.equal("");
-            //expect(carInfo.status.contactDetails).to.equal("");
-
+            expect(carInfo.infosForSale.mileage).to.be.bignumber.equal(new BN(0));
+            expect(carInfo.infosForSale.price).to.be.bignumber.equal(new BN(0));
+            expect(carInfo.infosForSale.country).to.be.empty;
+            expect(carInfo.infosForSale.localisation).to.be.empty;
+            expect(carInfo.infosForSale.contactDetails).to.be.empty;
         }); 
 
- 
+        it("shouldn't get car information because Id incorrect", async () => {  
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await expectRevert(BlockCarInstance.getCarNft(new BN(3),{ from: address0}),"Id incorrect");
+        }); 
+
+        it("should emit an event", async () => {  
+            const storeData = await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            expectEvent(storeData, "Minted", { userAddress: user1, tokenURI: tokenURI, nftId: new BN(expectedTokenId1), vin: vin, brand: brand, model: model, color: color, power: new BN(power), registrationCountry: registrationCountry, registrationDate: new BN(registrationDate) });
+        }); 
+
     });
 
-    describe.skip("Mint NFT Car and testing some function from ERC721", function () {
-        //not really needed to test the ERC721 function
-        const tokenURI = "https://gateway.pinata.cloud/ipfs/QmWn234qiACpaaEm4rEX7qWZJmNqGy4mefQZVaSBZkSsWe";
-        const vin ="WBA12345678901234";
-        const brand = "BMW";
-        const model = "i8";
-        const color = "Black";
-        const registrationCountry = "France";
-        const registrationDate = 10121999;
-        const power = 200;
+    //-------------------- Function mintCar ---------------------------------//
 
+    describe("Should not mint an NFT", function () {
+
+        const tokenURIEmpty = "";
+        const vinEmpty ="";
+        const brandEmpty = "";
+        const modelEmpty = "";
+        const colorEmpty = "";
+        const registrationCountryEmpty = "";
+        const registrationDateEmpty = 0;
+        const powerEmpty = 0;
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+        });
+
+        it("should revert beacuse address is bad", async () => {  
+            await expectRevert(BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: address0}), "Empty");
+        }); 
+
+        it("should revert beacuse tokenURIEmpty", async () => {  
+            await expectRevert(BlockCarInstance.mintCar(tokenURIEmpty, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1}), "Empty");
+        }); 
+
+        it("should revert beacuse vinEmpty", async () => {  
+            await expectRevert(BlockCarInstance.mintCar(tokenURI, vinEmpty, brand, model, color, power, registrationCountry, registrationDate, { from: user1}), "Empty");
+        }); 
+
+        it("should revert beacuse brandEmpty", async () => {  
+            await expectRevert(BlockCarInstance.mintCar(tokenURI, vin, brandEmpty, model, color, power, registrationCountry, registrationDate, { from: user1}), "Empty");
+        }); 
+
+        it("should revert beacuse modelEmpty", async () => {  
+            await expectRevert(BlockCarInstance.mintCar(tokenURI, vin, brand, modelEmpty, color, power, registrationCountry, registrationDate, { from: user1}), "Empty");
+        }); 
+
+        it("should revert beacuse colorEmpty", async () => {  
+            await expectRevert(BlockCarInstance.mintCar(tokenURI, vin, brand, model, colorEmpty, power, registrationCountry, registrationDate, { from: user1}), "Empty");
+        }); 
+
+        it("should revert beacuse powerEmpty", async () => {  
+            await expectRevert(BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, powerEmpty, registrationCountry, registrationDate, { from: user1}), "Empty");
+        }); 
+
+        it("should revert beacuse registrationCountryEmpty", async () => {  
+            await expectRevert(BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountryEmpty, registrationDate, { from: user1}), "Empty");
+        }); 
+
+        it("should revert beacuse registrationDateEmpty", async () => {  
+            await expectRevert(BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDateEmpty, { from: user1}), "Empty");
+        }); 
+
+    });
+
+    //-------------------- Some ERC721 functions -------------------------//
+
+    describe("Mint NFT Car and testing some function from ERC721", function () {
+        //not really needed to test the ERC721 function
         const tokenId = 1;
 
         beforeEach(async function () {
-            BlockCarInstance = await BlockCar.new({from:user1});
+            BlockCarInstance = await BlockCar.new({from:owner});
             await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
         });
 
@@ -110,370 +157,672 @@ contract('BlockCar', accounts => {
 
     });
 
+    //-------------------- Function getCurrentId-------------------------//
+    describe("testing getCurrentId", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+        });
+
+        it('returns the current token ID', async function () {
+            const tokenId = await BlockCarInstance.getCurrentId();
+            expect(tokenId).to.be.bignumber.equal(new BN(expectedTokenId1));
+         });
+
+    });
+
+    //-------------------- Function getNftIdsByAddress -------------------------//
+    describe("testing getNftIdsByAddress", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+        });
+
+        it('returns the NFT IDs owned by an address', async function () {
+            const nftIds = await BlockCarInstance.getNftIdsByAddress(user1);
+            const expectedIds = [1, 2, 3];
+            const nftIdsAsInt = nftIds.map(id => id.toNumber());
+            expect(nftIdsAsInt).to.have.members(expectedIds);
+          });
+
+        it('returns an empty array if the address has no NFTs', async function () {
+            const nftIds = await BlockCarInstance.getNftIdsByAddress(user2);
+            expect(nftIds).to.be.an('array').that.is.empty;
+        });
+
+    });
+
+    //-------------------- Function getNftIdsByDelegatorAddress -------------------------//
+    describe("testing getNftIdsByDelegatorAddress", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await BlockCarInstance.delegeteCar(user3, expectedTokenId1, { from: user1});
+
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId2, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId2, { from: owner});
+            await BlockCarInstance.delegeteCar(user3, expectedTokenId2, { from: user1});
+
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId3, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId3, { from: owner});
+            await BlockCarInstance.delegeteCar(user3, expectedTokenId3, { from: user1});
+
+        });
+
+        it('returns the NFT IDs owned by a delegator address', async function () {
+            const nftIds = await BlockCarInstance.getNftIdsByDelegatorAddress(user3);
+            const expectedIds = [1,2,3];
+            const nftIdsAsInt = nftIds.map(id => id.toNumber());
+            expect(nftIdsAsInt).to.have.members(expectedIds);
+          });
+
+        it('returns an empty array if the address has no NFTs', async function () {
+            const nftIds = await BlockCarInstance.getNftIdsByDelegatorAddress(user2);
+            expect(nftIds).to.be.an('array').that.is.empty;
+        });
+
+    });
+
+    //-------------------- Function getNftIdsByOnSaleAndKycDone -------------------------//
+    describe("testing getNftIdsByOnSaleAndKycDone", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user1});
+
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId2, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId2, { from: owner});
+            await BlockCarInstance.carIsForSale(expectedTokenId2,new BN(155000),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user1});
+
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId3, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId3, { from: owner});
+            await BlockCarInstance.carIsForSale(expectedTokenId3,new BN(155000),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user1});
+
+        });
+
+        it('returns the NFT IDs fir the car which have the status onSale And kycDone to true', async function () {
+            const nftIds = await BlockCarInstance.getNftIdsByOnSaleAndKycDone({from: user1});
+            const expectedIds = [1,2,3];
+            const nftIdsAsInt = nftIds.map(id => id.toNumber());
+            expect(nftIdsAsInt).to.have.members(expectedIds);
+          });
+    });
+
+    //-------------------- Function askKyc -------------------------//
+    describe("testing askKyc", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+        });
+
+        it('should have isWaitingKyc to true', async function () {
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.status.isWaitingKyc).to.be.true;
+        });
+
+        it('should emit an event', async function () {
+            const storedData = await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "KYC asked",
+                _address: user1,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093)); //on peut mettre 0, j'ai mis le timestamp au moment du test
+        });
+
+        it("should revert beacuse not the owner of the NFT", async () => {  
+            await expectRevert(BlockCarInstance.askKyc(expectedTokenId1, { from: user3}), "You not owner");
+        }); 
+
+        it("should revert beacuse not the of NFT is over the counter", async () => {  
+            await expectRevert(BlockCarInstance.askKyc(expectedTokenId3, { from: user1}), "Id incorrect");
+        });
+
+        it("should revert beacuse the KYC is already waiting", async () => {  
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await expectRevert(BlockCarInstance.askKyc(expectedTokenId1, { from: user1}), "KYC already waiting");
+        });
+
+        it("should revert beacuse the KYC is done", async () => {  
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await expectRevert(BlockCarInstance.askKyc(expectedTokenId1, { from: user1}), "KYC is done");
+        });
+    });
+
+    //-------------------- Function kycIsApproved -------------------------//
+    describe("testing kycIsApproved", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+        });
+
+        it('should have isWaitingKyc to false and isKycDone to true', async function () {
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.status.isWaitingKyc).to.be.false;
+            expect(carInfo.status.isKycDone).to.be.true;
+        });
+
+        it('should emit an event', async function () {
+            const storedData = await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "KYC done",
+                _address: owner,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093)); //on peut mettre 0, j'ai mis le timestamp au moment du test
+        });
+
+        it("should revert beacuse not the not approved by the owner of the contract (Ownable.sol)", async () => {  
+            await expectRevert(BlockCarInstance.kycIsApproved(expectedTokenId1, { from: user1}), "Ownable: caller is not the owner");
+        }); 
+
+        it("should revert beacuse KYC is done", async () => {  
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await expectRevert(BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner}), "KYC done");
+        });
+    });
+
+    //-------------------- Function carIsForSale -------------------------//
+    describe("testing carIsForSale", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+        });
+
+        it('should have isOnSale to true', async function () {
+            await BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user1});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.status.isOnSale).to.be.true;
+        });
+
+        it('should emit an event', async function () {
+            const storedData = await BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user1});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "Car for sale",
+                _address: user1,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093));
+        });
+
+        it("shouldn't get car information because Id incorrect", async () => {  
+            await expectRevert(BlockCarInstance.carIsForSale(expectedTokenId3,new BN(155000),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user1}),"Id incorrect");
+        }); 
+
+        it("should revert beacuse mileage equat to 0", async () => {  
+            await expectRevert(BlockCarInstance.carIsForSale(expectedTokenId1,new BN(0),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user1}), "Empty");
+        }); 
+
+        it("should revert beacuse price equat to 0", async () => {  
+            await expectRevert(BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(0), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user1}), "Empty");
+        }); 
+
+        it("should revert beacuse country empty", async () => {  
+            await expectRevert(BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(17000), "", "Strasbourg", "Jean 06 56 89 78 45", { from: user1}), "Empty");
+        }); 
+
+        it("should revert beacuse localisation empty", async () => {  
+            await expectRevert(BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(17000), "France", "", "Jean 06 56 89 78 45", { from: user1}), "Empty");
+        }); 
+
+        it("should revert beacuse contact details empty", async () => {  
+            await expectRevert(BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(17000), "France", "Strasbourg", "", { from: user1}), "Empty");
+        }); 
+    });
+
+    //-------------------- Function stopSale -------------------------//
+    describe("testing stopSale", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user1});
+        });
+
+        it('should have isOnSale to false', async function () {
+            await BlockCarInstance.stopSale(expectedTokenId1, { from: user1});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.status.isOnSale).to.be.false;
+        });
+
+        it('should emit an event', async function () {
+            const storedData = await BlockCarInstance.stopSale(expectedTokenId1, { from: user1});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "Sale stoped",
+                _address: user1,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093));
+        });
+
+        it("shouldn't work because Id incorrect", async () => {  
+            await expectRevert(BlockCarInstance.stopSale(expectedTokenId3, { from: user1}),"Id incorrect");
+        }); 
+
+        it("shouldn't work because not owner or delegator", async () => {  
+            await expectRevert(BlockCarInstance.stopSale(expectedTokenId1, { from: user3}),"You not authorized");
+        }); 
+    });
+
+    //-------------------- Function carIsStolen -------------------------//
+    describe("testing carIsStolen", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user1});
+        });
+
+        it('should have isOnSale to false and isStolen to true', async function () {
+            await BlockCarInstance.carIsStolen(expectedTokenId1, { from: user1});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.status.isOnSale).to.be.false;
+            expect(carInfo.status.isStolen).to.be.true;
+        });
+
+        it('should emit an event', async function () {
+            const storedData = await BlockCarInstance.carIsStolen(expectedTokenId1, { from: user1});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "Car stolen",
+                _address: user1,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093));
+        });
+
+        it("shouldn't work because Id incorrect", async () => {  
+            await expectRevert(BlockCarInstance.carIsStolen(expectedTokenId3, { from: user1}),"Id incorrect");
+        }); 
+
+        it("shouldn't work because not owner or delegator", async () => {  
+            await expectRevert(BlockCarInstance.carIsStolen(expectedTokenId1, { from: user3}),"You not authorized");
+        }); 
+    });
+
+    //-------------------- Function carFound -------------------------//
+    describe("testing carFound", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user1});
+            await BlockCarInstance.carIsStolen(expectedTokenId1, { from: user1});
+        });
+
+        it('should have isOnSale to false and isStolen to true', async function () {
+            await BlockCarInstance.carFound(expectedTokenId1, { from: user1});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.status.isStolen).to.be.false;
+        });
+
+        it("should emit an event", async function () {
+            const storedData = await BlockCarInstance.carFound(expectedTokenId1, { from: user1});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "Car found",
+                _address: user1,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093));
+        });
+
+        it("shouldn't work because Id incorrect", async () => {  
+            await expectRevert(BlockCarInstance.carFound(expectedTokenId3, { from: user1}),"Id incorrect");
+        }); 
+
+        it("shouldn't work because not owner or delegator", async () => {  
+            await expectRevert(BlockCarInstance.carFound(expectedTokenId1, { from: user3}),"You not authorized");
+        }); 
+    });
+
+    //-------------------- Function carIsScrapped -------------------------//
+    describe("testing carIsScrapped", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+        });
+
+        it("should have isOnSale to false and isStolen to true", async function () {
+            await BlockCarInstance.carIsScrapped(expectedTokenId1, { from: user1});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.status.isOnSale).to.be.false;
+            expect(carInfo.status.isScrapped).to.be.true;
+        });
+
+        it("should emit an event", async function () {
+            const storedData = await BlockCarInstance.carIsScrapped(expectedTokenId1, { from: user1});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "Car scrapped",
+                _address: user1,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093));
+        });
+
+        it("shouldn't work because Id incorrect", async () => {  
+            await expectRevert(BlockCarInstance.carIsScrapped(expectedTokenId3, { from: user1}),"Id incorrect");
+        }); 
+
+        it("shouldn't work because not owner or delegator", async () => {  
+            await expectRevert(BlockCarInstance.carIsScrapped(expectedTokenId1, { from: user3}),"You not authorized");
+        }); 
+    });
+
+    //-------------------- Function delegeteCar -------------------------//
+    describe("testing delegeteCar", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+        });
+
+        it("should have isDelegated to true", async function () {
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await BlockCarInstance.delegeteCar(user2, expectedTokenId1, { from: user1});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.status.isDelegated).to.be.true;
+        });
+
+        it("should do some action after delegation", async function () {
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await BlockCarInstance.delegeteCar(user2, expectedTokenId1, { from: user1});
+            await BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user2});
+            await BlockCarInstance.stopSale(expectedTokenId1, { from: user2});
+            await BlockCarInstance.carIsStolen(expectedTokenId1, { from: user2});
+            await BlockCarInstance.carFound(expectedTokenId1, { from: user2});
+        });
+
+        it("should emit an event", async function () {
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            const storedData = await BlockCarInstance.delegeteCar(user2, expectedTokenId1, { from: user1});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "Car delegated",
+                _address: user2,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093));
+        });
+
+        it("shouldn't work because KYC not approved", async () => {  
+            await expectRevert(BlockCarInstance.delegeteCar(user2, expectedTokenId1, { from: user1}),"KYC not approved");
+        }); 
+
+        it("shouldn't work because Id incorrect", async () => {  
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await expectRevert(BlockCarInstance.delegeteCar(user2, expectedTokenId3, { from: user1}),"Id incorrect");
+        }); 
+
+        it("shouldn't work because not owner", async () => {  
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await expectRevert(BlockCarInstance.delegeteCar(user2, expectedTokenId1, { from: user3}),"You not owner");
+        }); 
+    });
+
+    //-------------------- Function stopDelegation -------------------------//
+    describe("testing stopDelegation", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await BlockCarInstance.delegeteCar(user2, expectedTokenId1, { from: user1});
+        });
+
+        it("should have isDelegated to false", async function () {
+            await BlockCarInstance.stopDelegation(expectedTokenId1, { from: user1});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.status.isDelegated).to.be.false;
+        });
+
+        it("should not put salling informations to the car", async function () {
+            await BlockCarInstance.stopDelegation(expectedTokenId1, { from: user1});
+            await expectRevert(BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user2}),"You not authorized");
+        });
+
+        it("should emit an event", async function () {
+            const storedData = await BlockCarInstance.stopDelegation(expectedTokenId1, { from: user1});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "Delegation stoped",
+                _address: user1,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093));
+        });
+
+        it("shouldn't work because not delegated", async () => {  
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId2, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId2, { from: owner});
+            await expectRevert(BlockCarInstance.stopDelegation(expectedTokenId2, { from: user1}),"NFT not delegated");
+        }); 
+
+        it("shouldn't work because Id incorrect", async () => {  
+            await expectRevert(BlockCarInstance.stopDelegation(expectedTokenId3, { from: user1}),"Id incorrect");
+        }); 
+
+        it("shouldn't work because not owner or delegator", async () => {  
+            await expectRevert(BlockCarInstance.stopDelegation(expectedTokenId1, { from: user3}),"You not authorized");
+        }); 
+    });
+
+    //-------------------- Function addDocumentLink -------------------------//
+    describe("testing addDocumentLink", function () {
+
+        const linkDocument = "https://gateway.pinata.cloud/ipfs/lgYn521qiACpaaEm4rEX7qWZJmNqGy4mefQZVakoGFSoJp";
+        const linkDocumentConcat = linkDocument.concat(";");
+        const linkDocumentEmpty = "";
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+        });
+
+        it("should add a link document", async function () {
+            await BlockCarInstance.addDocumentLink(linkDocument,expectedTokenId1, { from: user1});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.linkDocument).to.equal(linkDocument);
+        });
+
+        it("should not add an empty link", async function () {
+            await expectRevert(BlockCarInstance.addDocumentLink(linkDocumentEmpty,expectedTokenId1, { from: user1}),"Empty");
+        });
+
+        it("should emit an event", async function () {
+            const storedData = await BlockCarInstance.addDocumentLink(linkDocument,expectedTokenId1, { from: user1});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "Document added",
+                _address: user1,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093));
+        });
+
+        it("shouldn't work because Id incorrect", async () => {  
+            await expectRevert(BlockCarInstance.addDocumentLink(linkDocument, expectedTokenId3, { from: user1}),"Id incorrect");
+        }); 
+
+        it("shouldn't work because not owner or delegator", async () => {  
+            await expectRevert(BlockCarInstance.addDocumentLink(linkDocument, expectedTokenId1, { from: user3}),"You not authorized");
+        }); 
+    });
+
+    //-------------------- Function transferFrom -------------------------//
+    describe("testing transferFrom", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+        });
+
+        it("should transfer an NFT from owner to new address and testing status", async function () {
+            await BlockCarInstance.transferFrom(user1, user2,expectedTokenId1, { from: user1});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.status.isDelegated).to.be.false;
+            expect(carInfo.status.isKycDone).to.be.false;
+            expect(carInfo.status.isOnSale).to.be.false;
+            const ownerOf = await BlockCarInstance.ownerOf(expectedTokenId1);
+            expect(ownerOf).to.equal(user2);
+        });
+
+        it("should transfer an NFT from owner to new address by delagator", async function () {
+            await BlockCarInstance.delegeteCar(user2, expectedTokenId1, { from: user1});
+            await BlockCarInstance.transferFrom(user1, user3,expectedTokenId1, { from: user2});
+            const ownerOf = await BlockCarInstance.ownerOf(expectedTokenId1);
+            expect(ownerOf).to.equal(user3);
+        });
+
+        it("should emit an event", async function () {
+            const storedData = await BlockCarInstance.transferFrom(user1, user2,expectedTokenId1, { from: user1});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "transfer",
+                _address: user1,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093));
+        });
+
+        
+        it("shouldn't transfer an NFT from by random wallet", async function () {
+            await expectRevert(BlockCarInstance.transferFrom(user1, user2,expectedTokenId1, { from: user2}),"ERC721: caller is not token owner or approved");
+        });
+
+        it("shouldn't work because Id incorrect", async () => {  
+            await expectRevert(BlockCarInstance.transferFrom(user1, user2,expectedTokenId3, { from: user1}),"ERC721: invalid token ID");
+        }); 
+    });
+
+    //-------------------- Function safeTransferFrom -------------------------//
+    describe("testing safeTransferFrom", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+        });
+
+        it("should transfer an NFT from owner to new address and testing status", async function () {
+            await BlockCarInstance.safeTransferFrom(user1, user2,expectedTokenId1, { from: user1});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.status.isDelegated).to.be.false;
+            expect(carInfo.status.isKycDone).to.be.false;
+            expect(carInfo.status.isOnSale).to.be.false;
+            const ownerOf = await BlockCarInstance.ownerOf(expectedTokenId1);
+            expect(ownerOf).to.equal(user2);
+        });
+
+        it("should transfer an NFT from owner to new address by delagator", async function () {
+            await BlockCarInstance.delegeteCar(user2, expectedTokenId1, { from: user1});
+            await BlockCarInstance.safeTransferFrom(user1, user3,expectedTokenId1, { from: user2});
+            const ownerOf = await BlockCarInstance.ownerOf(expectedTokenId1);
+            expect(ownerOf).to.equal(user3);
+        });
+
+        it("should emit an event", async function () {
+            const storedData = await BlockCarInstance.safeTransferFrom(user1, user2,expectedTokenId1, { from: user1});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "transfer",
+                _address: user1,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093));
+        });
+
+        
+        it("shouldn't transfer an NFT from by random wallet", async function () {
+            await expectRevert(BlockCarInstance.safeTransferFrom(user1, user2,expectedTokenId1, { from: user2}),"ERC721: caller is not token owner or approved");
+        });
+
+        it("shouldn't work because Id incorrect", async () => {  
+            await expectRevert(BlockCarInstance.safeTransferFrom(user1, user2,expectedTokenId3, { from: user1}),"ERC721: invalid token ID");
+        }); 
+    });
+
+      //-------------------- Function buyNftAndTransferValue -------------------------//
+      describe("testing buyNftAndTransferValue", function () {
+
+        beforeEach(async function () {
+            BlockCarInstance = await BlockCar.new({from:owner});
+            await BlockCarInstance.mintCar(tokenURI, vin, brand, model, color, power, registrationCountry, registrationDate, { from: user1});
+            await BlockCarInstance.askKyc(expectedTokenId1, { from: user1});
+            await BlockCarInstance.kycIsApproved(expectedTokenId1, { from: owner});
+            await BlockCarInstance.carIsForSale(expectedTokenId1,new BN(155000),new BN(17000), "France", "Strasbourg", "Jean 06 56 89 78 45", { from: user1})
+        });
+
+        it("should transfer an NFT from owner to new address and testing status", async function () {
+            await BlockCarInstance.buyNftAndTransferValue(expectedTokenId1, { from: user2, value:new BN(17000)});
+            const carInfo = await BlockCarInstance.getCarNft(new BN(expectedTokenId1));
+            expect(carInfo.status.isDelegated).to.be.false;
+            expect(carInfo.status.isKycDone).to.be.false;
+            expect(carInfo.status.isOnSale).to.be.false;
+            const ownerOf = await BlockCarInstance.ownerOf(expectedTokenId1);
+            expect(ownerOf).to.equal(user2);
+        });
+
+        it("should transfer an NFT from owner to new address by delagator", async function () {
+            await BlockCarInstance.delegeteCar(user2, expectedTokenId1, { from: user1});
+            await BlockCarInstance.buyNftAndTransferValue(expectedTokenId1, { from: user3, value:new BN(17000)});
+            const ownerOf = await BlockCarInstance.ownerOf(expectedTokenId1);
+            expect(ownerOf).to.equal(user3);
+        });
+
+        it("should emit an event", async function () {
+            const storedData = await BlockCarInstance.buyNftAndTransferValue(expectedTokenId1, { from: user2, value:new BN(17000)});
+            const event = expectEvent.inLogs(storedData.logs, 'ChangingStatus', {
+                status: "transfer with value",
+                _address: user2,
+                nftId: new BN(expectedTokenId1)
+              });
+              expect(event.args.timestamp).to.be.bignumber.greaterThan(new BN(1680907093));
+        });
+
+        it("shouldn't transfer an NFT, amount not enough", async function () {
+            await expectRevert(BlockCarInstance.buyNftAndTransferValue(expectedTokenId1, { from: user2, value:new BN(16999)}),"Amount not good");
+        });
+
+        it("shouldn't work because we canceled the sale", async () => {  
+            await BlockCarInstance.stopSale(expectedTokenId1, { from: user1});
+            await expectRevert(BlockCarInstance.buyNftAndTransferValue(expectedTokenId3, { from: user1, value:new BN(17000)}),"NFT not in sale");
+       
+        }); 
+    });
+
+
 });
-/*
-    let VotingInstance;
-
-    describe("addVoter()", function () {
-
-        before(async function () {
-            VotingInstance = await Voting.new({from:owner});
-        });
-
-        it("should add a voter", async () => {
-            await VotingInstance.addVoter(voter1, { from: owner});
-        });  
-
-        it("shouldn't add a voter, (voter1 is not owner)", async () => {
-            await expectRevert(VotingInstance.addVoter(voter2, { from: voter1}),"Ownable: caller is not the owner");
-        });  
-     
-        it("shouldn't add voter1 again, revert", async () => {
-            await expectRevert(VotingInstance.addVoter(voter1, { from: owner }), "Already registered");
-        });   
-        
-        it("should add a voter and get event VoterRegistered", async () => {
-            const storedData = await VotingInstance.addVoter(voter2);
-            expectEvent(storedData, 'VoterRegistered',{voterAddress : voter2});
-        });  
-
-        it("shouldn't add a voter (because we change the workflowStatus), revert", async () => {
-            await VotingInstance.startProposalsRegistering({ from: owner });
-            await expectRevert(VotingInstance.addVoter(voter3, { from: owner}), "Voters registration is not open yet");
-        });
-
-    });
-
-    describe("getVoter() and onlyVoters()", function () {
-
-        before(async function () {
-            VotingInstance = await Voting.new({from:owner});
-        });
-
-        it("should add a voter", async () => {
-            await VotingInstance.addVoter(voter1, { from: owner});
-            const voter = await VotingInstance.getVoter(voter1, {from : voter1});
-            expect(voter.isRegistered).to.be.true;
-            expect(voter.hasVoted).to.be.false;
-            expect(voter.votedProposalId).to.be.bignumber.equal(new BN(0));
-        });    
-        
-        it("shouldn't add a voter (because owner not registered), revert", async () => {
-            await expectRevert(VotingInstance.getVoter(voter1, { from: owner }), "You're not a voter");
-        });   
-        
-    });
-
-    describe("addProposal() and getOneProposal", function () {
-
-        before(async function () {
-            VotingInstance = await Voting.new({from:owner});
-            await VotingInstance.addVoter(voter1, { from: owner});
-        });
-
-        it("shouldn't add a proposal (not in Proposals Resgsitering period), revert", async () => {
-            await expectRevert(VotingInstance.addProposal("Proposal 1", { from: voter1 }), "Proposals are not allowed yet");
-        });   
-        
-        it("should begin the proposal period", async () => {
-            await VotingInstance.startProposalsRegistering({ from: owner });
-        });  
-
-        it("shouldn't add a proposal (_desc is empty)), revert", async () => {
-            await expectRevert(VotingInstance.addProposal("", { from: voter1 }), "Vous ne pouvez pas ne rien proposer");
-        }); 
-
-        it("should add a proposal ", async () => {
-            await VotingInstance.addProposal("Proposal 1", { from: voter1 });
-            const storeData = await VotingInstance.getOneProposal(1, { from: voter1 });
-            expect(storeData.description).to.equal("Proposal 1");
-            expect(storeData.voteCount).to.be.bignumber.equal(new BN(0));
-        }); 
-
-        it("should add a proposal and get an event ProposalRegistered", async () => {
-            const storedData = await VotingInstance.addProposal("Proposal 2", { from: voter1 });
-            expectEvent(storedData, 'ProposalRegistered',{ proposalId : new BN(2) });
-        });  
-
-        it("shouldn't get a proposal (Owner is not registered),revert", async () => {
-            await expectRevert(VotingInstance.getOneProposal(1, { from: owner }),"You're not a voter");
-        }); 
-    });
-
-    describe("setVote()", function () {
-
-        before(async function () {
-            VotingInstance = await Voting.new({from:owner});
-            await VotingInstance.addVoter(voter1, { from: owner});
-            await VotingInstance.addVoter(voter2, { from: owner});
-            await VotingInstance.addVoter(voter3, { from: owner});
-            await VotingInstance.addVoter(voter4, { from: owner});
-            await VotingInstance.startProposalsRegistering({ from: owner });
-            await VotingInstance.addProposal("Proposal 1", { from: voter1 });
-            await VotingInstance.addProposal("Proposal 2", { from: voter1 });            
-            await VotingInstance.addProposal("Proposal 3", { from: voter2 });
-            await VotingInstance.addProposal("Proposal 4", { from: voter2 });
-        });
-
-        it("shouldn't add a vote (not in voting session period), revert", async () => {
-            await expectRevert(VotingInstance.setVote(1, { from: voter1 }), "Voting session havent started yet");
-        });
-
-        it("should begin the voting session period", async () => {
-            await VotingInstance.endProposalsRegistering({ from: owner });
-            await VotingInstance.startVotingSession({ from: owner });
-        });  
-
-        it("shouldn't add a vote, because the proposal didn't exist", async () => {
-            await expectRevert(VotingInstance.setVote(5, { from: voter2 }),"Proposal not found");
-        });  
-
-        it("should add a vote", async () => {
-            await VotingInstance.setVote(1, { from: voter1 });
-            const voter = await VotingInstance.getVoter(voter1, {from : voter1});
-            expect(voter.hasVoted).to.be.true;
-            expect(voter.votedProposalId).to.be.bignumber.equal(new BN(1));
-        });  
-
-        it("shouldn't add a vote, voter1 because already voted, revert", async () => {
-            await expectRevert(VotingInstance.setVote(2, { from: voter1 }),"You have already voted");
-        });  
-
-        it("should increment proposalsArray", async () => {
-            await VotingInstance.setVote(1, { from: voter2 });
-            await VotingInstance.setVote(1, { from: voter3 });
-            const storeData = await VotingInstance.getOneProposal(1, { from: voter2 });
-            expect(storeData.voteCount).to.be.bignumber.equal(new BN(3));
-        }); 
-
-        it("shouldn't add a vote (Owner is not registered),revert", async () => {
-            await expectRevert(VotingInstance.setVote(1, { from: owner }),"You're not a voter");
-        });
-
-        it("should add a vote and get event Voted", async () => {
-            const storedData = await VotingInstance.setVote(2, { from: voter4 });
-            expectEvent(storedData, 'Voted',{ voter : voter4, proposalId : new BN(2) });
-        }); 
-
-    });
-
-    describe("tallyVotes()", function () {
-
-        context("tallyVotes() part 1, here we just test expectRevert", function () {
-
-            before(async function () {
-                VotingInstance = await Voting.new({from:owner});
-                await VotingInstance.startProposalsRegistering({ from: owner });
-                await VotingInstance.endProposalsRegistering({ from: owner });
-                await VotingInstance.startVotingSession({ from: owner });
-            });
-
-            it("shouldn't work (not in voting session ended period), revert", async () => {
-                await expectRevert(VotingInstance.tallyVotes({ from: owner }), "Current status is not voting session ended");
-            });
-
-            it("should begin the voting session period", async () => {
-                await VotingInstance.endVotingSession({ from: owner });
-            });  
-
-            it("shouldn't work (The caller must be the owner), revert", async () => {
-                await expectRevert(VotingInstance.tallyVotes({ from: voter1 }), "Ownable: caller is not the owner");
-            });
-
-        });   
-
-        context("tallyVotes() part 2, we test the rest of the function", function () {
-
-            beforeEach(async function () {
-                VotingInstance = await Voting.new({from:owner});
-                await VotingInstance.addVoter(voter1, { from: owner});
-                await VotingInstance.addVoter(voter2, { from: owner});
-                await VotingInstance.addVoter(voter3, { from: owner});
-                await VotingInstance.addVoter(voter4, { from: owner});
-                await VotingInstance.addVoter(voter5, { from: owner});
-                await VotingInstance.startProposalsRegistering({ from: owner });
-                await VotingInstance.addProposal("Proposal 1", { from: voter1 });
-                await VotingInstance.addProposal("Proposal 2", { from: voter1 });            
-                await VotingInstance.addProposal("Proposal 3", { from: voter2 });
-                await VotingInstance.addProposal("Proposal 4", { from: voter2 });
-                await VotingInstance.endProposalsRegistering({ from: owner });
-                await VotingInstance.startVotingSession({ from: owner });
-                await VotingInstance.setVote(1, { from: voter1 });
-                await VotingInstance.setVote(1, { from: voter2 });
-                await VotingInstance.setVote(2, { from: voter3 });
-                await VotingInstance.setVote(2, { from: voter4 });
-                await VotingInstance.setVote(3, { from: voter5 });
-                await VotingInstance.endVotingSession({ from: owner });
-            });
-
-            it("should be the proposal 1 which win", async () => {
-                await VotingInstance.tallyVotes({ from: owner });
-                expect(await VotingInstance.winningProposalID.call()).to.be.bignumber.equal(new BN(1));
-            });
-
-            it("should get event WorkflowStatusChange ", async () => {
-                const storedData = await VotingInstance.tallyVotes({ from: owner });
-                expectEvent(storedData, 'WorkflowStatusChange',{ previousStatus : new BN(4), newStatus : new BN(5) });
-            });
-
-            it("should change workflowStatus to 5 ", async () => {
-                await VotingInstance.tallyVotes({ from: owner });
-                expect(await VotingInstance.workflowStatus.call()).to.be.bignumber.equal(new BN(5));
-            });
-
-        }); 
-
-    });
-
-    describe("startProposalsRegistering()", function () {
-
-        context("startProposalsRegistering() part 1, here we just test expectRevert and workflowstatus", function () {
-            before(async function () {
-                VotingInstance = await Voting.new({from:owner});
-            });
-
-            it("should test if workflowstatus is equal to 0", async () => {
-                expect(await VotingInstance.workflowStatus.call()).to.be.bignumber.equal(new BN(0));
-            });    
-
-            it("shouldn't work because voter1 is not the owner, revert", async () => {
-                await expectRevert(VotingInstance.startProposalsRegistering( { from: voter1 }), "Ownable: caller is not the owner");
-            });
-
-            it("should start Proposals Registering", async () => {
-                await VotingInstance.startProposalsRegistering( { from: owner });
-            });
-
-            it("shouldn't work because we are not registering the voters, revert", async () => {
-                await expectRevert(VotingInstance.startProposalsRegistering( { from: owner }), "Registering proposals cant be started now");
-            });
-            it("should test if workflowstatus is equal to 1", async () => {
-                expect(await VotingInstance.workflowStatus.call()).to.be.bignumber.equal(new BN(1));
-            }); 
-        });
-
-        context("startProposalsRegistering() part 2, we test the rest of the function", function () {
-
-            beforeEach(async function () {
-                VotingInstance = await Voting.new({from:owner});
-                await VotingInstance.addVoter(voter1, { from: owner});
-            });
-
-            it("should add the genesis block to proposalsArray", async () => {
-                await VotingInstance.startProposalsRegistering( { from: owner });
-                const storeData = await VotingInstance.getOneProposal(0, { from: voter1 });
-                expect(storeData.voteCount).to.be.bignumber.equal(new BN(0));
-                expect(storeData.description).to.equal("GENESIS");
-            }); 
-
-            it("should get event WorkflowStatusChange ", async () => {
-                const storeData = await VotingInstance.startProposalsRegistering( { from: owner });
-                expectEvent(storeData, 'WorkflowStatusChange',{ previousStatus : new BN(0), newStatus : new BN(1) });
-            });
-
-        });
-
-
-    });
-
-    describe("endProposalsRegistering()", function () {
-
-        before(async function () {
-            VotingInstance = await Voting.new({from:owner});
-            await VotingInstance.addVoter(voter1, { from: owner});
-        });
-
-        it("shouldn't work because we are not registering proposals, revert", async () => {
-            await expectRevert(VotingInstance.endProposalsRegistering( { from: owner }), "Registering proposals havent started yet");
-        }); 
-
-        it("should start Proposals Registering", async () => {
-            await VotingInstance.startProposalsRegistering( { from: owner });
-        });
-
-        it("shouldn't work because voter1 is not the owner, revert", async () => {
-            await expectRevert(VotingInstance.endProposalsRegistering( { from: voter1 }), "Ownable: caller is not the owner");
-        });
-
-        it("should test if workflowstatus is equal to 1", async () => {
-            expect(await VotingInstance.workflowStatus.call()).to.be.bignumber.equal(new BN(1));
-        });   
-
-        it("should end Proposals Registering and get event WorkflowStatusChange", async () => {
-            const storeData = await VotingInstance.endProposalsRegistering( { from: owner });
-            expectEvent(storeData, 'WorkflowStatusChange',{ previousStatus : new BN(1), newStatus : new BN(2) });
-        });
-
-        it("should test if workflowstatus is equal to 2", async () => {
-            expect(await VotingInstance.workflowStatus.call()).to.be.bignumber.equal(new BN(2));
-        });  
-    });
-
-    describe("startVotingSession()", function () {
-
-        before(async function () {
-            VotingInstance = await Voting.new({from:owner});
-            await VotingInstance.addVoter(voter1, { from: owner});
-            await VotingInstance.startProposalsRegistering( { from: owner });
-        });
-
-        it("shouldn't work because we are not registering proposals, revert", async () => {
-            await expectRevert(VotingInstance.startVotingSession( { from: owner }), "Registering proposals phase is not finished");
-        }); 
-
-        it("should end Proposals Registering", async () => {
-            await VotingInstance.endProposalsRegistering( { from: owner });
-        });
-
-        it("shouldn't work because voter1 is not the owner, revert", async () => {
-            await expectRevert(VotingInstance.startVotingSession( { from: voter1 }), "Ownable: caller is not the owner");
-        });
-
-        it("should test if workflowstatus is equal to 2", async () => {
-            expect(await VotingInstance.workflowStatus.call()).to.be.bignumber.equal(new BN(2));
-        });   
-
-        it("should start voting session and get event WorkflowStatusChange", async () => {
-            const storeData = await VotingInstance.startVotingSession( { from: owner });
-            expectEvent(storeData, 'WorkflowStatusChange',{ previousStatus : new BN(2), newStatus : new BN(3) });
-        });
-
-        it("should test if workflowstatus is equal to 3", async () => {
-            expect(await VotingInstance.workflowStatus.call()).to.be.bignumber.equal(new BN(3));
-        });  
-    });
-
-    describe("endVotingSession()", function () {
-
-        before(async function () {
-            VotingInstance = await Voting.new({from:owner});
-            await VotingInstance.addVoter(voter1, { from: owner});
-            await VotingInstance.startProposalsRegistering( { from: owner });
-            await VotingInstance.endProposalsRegistering( { from: owner });
-        });
-
-        it("shouldn't work because we are not registering proposals, revert", async () => {
-            await expectRevert(VotingInstance.endVotingSession( { from: owner }), "Voting session havent started yet");
-        }); 
-
-        it("should start voting session", async () => {
-            await VotingInstance.startVotingSession( { from: owner });
-        });
-
-        it("shouldn't work because voter1 is not the owner, revert", async () => {
-            await expectRevert(VotingInstance.endVotingSession( { from: voter1 }), "Ownable: caller is not the owner");
-        });
-
-        it("should test if workflowstatus is equal to 3", async () => {
-            expect(await VotingInstance.workflowStatus.call()).to.be.bignumber.equal(new BN(3));
-        });   
-
-        it("should end voting session and get event WorkflowStatusChange", async () => {
-            const storeData = await VotingInstance.endVotingSession( { from: owner });
-            expectEvent(storeData, 'WorkflowStatusChange',{ previousStatus : new BN(3), newStatus : new BN(4) });
-        });
-
-        it("should test if workflowstatus is equal to 4", async () => {
-            expect(await VotingInstance.workflowStatus.call()).to.be.bignumber.equal(new BN(4));
-        });  
-    });*/

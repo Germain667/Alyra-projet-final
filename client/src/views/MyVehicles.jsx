@@ -2,7 +2,6 @@ import { Button, Flex, FormControl, FormLabel, Heading, Input, Stack, useColorMo
 import React, { useState } from "react";
 import useEth from '../contexts/EthContext/useEth';
 import axios from 'axios';
-
 import { useDisplayNfts } from "../hooks/useDisplayNfts";
 import { useDisplayNfts4Delegator } from "../hooks/useDisplayNfts4Delegator";
 
@@ -21,11 +20,9 @@ function MyVehicles() {
     const { idNfts } = useDisplayNfts(accounts);  
     const { idNfts4Delegator } = useDisplayNfts4Delegator(accounts);  
     const [file, setFile] = useState();
-    //const [fileName, setFileName] = useState("");
 
     const handleFileChange = (e) => {
       setFile(e.target.files[0]);
-      //setFileName(e.target.files[0].name);
     };
 
     const handleSubmit = async () => {

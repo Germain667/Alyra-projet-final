@@ -24,7 +24,6 @@ function Details() {
     const id = searchParams.get('id');
     const navigate  = useNavigate();
     const [file, setFile] = useState();
-    //const [fileName, setFileName] = useState("");
 
     const { isOpen, onOpen, onClose } = useDisclosure();
     const cancelRef = React.useRef();
@@ -54,7 +53,7 @@ function Details() {
         'Document added': 'Un document a été ajouté',
         'Delegation stoped': 'La délégation du véhicule a été annulée',
         'transfer': 'Le véhicule a été cédé',
-        'transfer with amount': 'Le véhicule a été transféré avec paiement depuis BlockCar',
+        'transfer with value': 'Le véhicule a été transféré avec paiement depuis BlockCar',
       };
 
     useEffect(() => {
@@ -110,21 +109,19 @@ function Details() {
     
 
     const sellNFT = async (id) => {
-    //onOpen();
-    //console.log("id : "+id)
 
-    const mileage = document.getElementById('mileage').value;
-    const price = document.getElementById('price').value;
-    const country = document.getElementById('country').value;
-    const localisation = document.getElementById('localisation').value;
-    const contactDetails = document.getElementById('contactDetails').value;
+        const mileage = document.getElementById('mileage').value;
+        const price = document.getElementById('price').value*1000000;
+        const country = document.getElementById('country').value;
+        const localisation = document.getElementById('localisation').value;
+        const contactDetails = document.getElementById('contactDetails').value;
 
-    //console.log(mileage+ " "+price+ " "+country+ " "+localisation+ " "+contactDetails+ " ");
+        //console.log(mileage+ " "+price+ " "+country+ " "+localisation+ " "+contactDetails+ " ");
 
     if (mileage === '' || price === '' || country === '' || localisation === '' || contactDetails === '') {
         alert('Veuillez remplir tous les champs');
     } else {
-        await contract.methods.carIsForSaleAndSetInformationsForSale(id,mileage,price,country,localisation,contactDetails).send({ from: accounts[0] });
+        await contract.methods.carIsForSale(id,mileage,price,country,localisation,contactDetails).send({ from: accounts[0] });
         onClose();
         setRefresh(true);
     }
@@ -168,7 +165,6 @@ function Details() {
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
-        //setFileName(e.target.files[0].name);
       };
 
     const addDocument = async (id) => {
@@ -176,24 +172,14 @@ function Details() {
         //const formData = new FormData()
         //formData.append("document", file)
         //formData.append("fileName", fileName)
-    
         //console.log("image : ", file);
         //console.log("filename : ", fileName);
-
         //const result = await axios.post('http://localhost:8082/documents', formData, { headers: {'Content-Type': 'multipart/form-data'}})
         //const entireURI = result.data.entireURI;
         //await contract.methods.addDocumentLink(entireURI, id).send({ from: accounts[0] });
 
-
-        
-
-
-
         const formData = new FormData();
         formData.append("file", file);
-
-        //console.log('file : '+file);
-        //console.log('fileName : '+fileName);
 
         const url =  "https://api.pinata.cloud/pinning/pinFileToIPFS";
     
@@ -213,11 +199,6 @@ function Details() {
         const entireURI = prefixPinata.concat(response.data.IpfsHash);
         await contract.methods.addDocumentLink(entireURI, id).send({ from: accounts[0] });
 
-
-
-
-
-
         onClose5();
         setRefresh(true);
     }
@@ -235,14 +216,14 @@ function Details() {
         setRefresh(true);
     }
 
-    const sellNftAndTransferValueToOwner = async (id) => {
+    const buyNftAndTransferValue = async (id) => {
 
         if (!nft.infosForSale.price) {
             alert('Le prix n\'est pas défini');
         } else {
-            await contract.methods.sellNftAndTransferValueToOwner(id).send({
+            await contract.methods.buyNftAndTransferValue(id).send({
                 from: accounts[0],
-                value: nft.infosForSale.price*1000000000000000000
+                value: nft.infosForSale.price*1000000000000
               });
         }
         onClose4();
@@ -299,7 +280,7 @@ function Details() {
                         color={('gray.900', 'gray.400')}
                         fontWeight={300}
                         fontSize={'2xl'}>
-                        {nft.status.isOnSale ? `${nft.infosForSale.price} ETH` : "Cette voiture n'est pas en vente"}
+                        {nft.status.isOnSale ? `${nft.infosForSale.price/1000000} ETH` : "Cette voiture n'est pas en vente"}
                         </Text>
                     </Box>
 
@@ -401,7 +382,7 @@ function Details() {
                             <Text as={'span'} fontWeight={'bold'}>
                                 Prix : 
                             </Text>{' '}
-                            {nft.infosForSale.price} ETH
+                            {nft.infosForSale.price/1000000} ETH
                             </ListItem>
                             <ListItem>
                             <Text as={'span'} fontWeight={'bold'}>
@@ -842,7 +823,7 @@ function Details() {
                 <Button ref={cancelRef4} onClick={onClose4} colorScheme="red" mr={3}>
                     Non
                 </Button>
-                <Button colorScheme="blue" onClick={() => sellNftAndTransferValueToOwner(id)}>
+                <Button colorScheme="blue" onClick={() => buyNftAndTransferValue(id)}>
                     Oui
                 </Button>
                 </AlertDialogFooter>
