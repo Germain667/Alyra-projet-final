@@ -25,8 +25,6 @@
 - Utilisez la commande truffle test pour exécuter les tests
 - Modifiez les fichiers dans le répertoire /contracts pour modifier le contrat intelligent
 - Modifiez les fichiers dans le répertoire /src pour modifier l'application web
-- Vidéo démonstrative
-- Une vidéo démonstrative de l'application est disponible sur YouTube.
 
 ## Contributeurs du projet de la Promo Satoshi
 - Florent L.

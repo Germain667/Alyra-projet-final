@@ -178,6 +178,7 @@ function Details() {
         //const entireURI = result.data.entireURI;
         //await contract.methods.addDocumentLink(entireURI, id).send({ from: accounts[0] });
 
+        
         const formData = new FormData();
         formData.append("file", file);
 

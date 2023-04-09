@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { EthProvider } from "./contexts/EthContext";
-//import BlockCar from "./components/BlockCar";
 import { ChakraProvider } from '@chakra-ui/react'
 import "./styles.css";
 import Address from "./components/BlockCar/Address";
@@ -53,7 +52,7 @@ root.render(
               <Text color="White" mb={2} fontSize="2xl">
                 © 2023 BlockCar. Tous droits réservés.
               </Text>
-              <Link href="https://github.com/Germain667/Alyra-projet-4" mb={2} color="white" fontSize="2xl">
+              <Link href="https://github.com/Germain667/Alyra-projet-final" mb={2} color="white" fontSize="2xl">
                 <Icon as={FaGithub} color="blue.500" mr={2} />
                 Dépôt Git
               </Link>
