@@ -14,7 +14,7 @@
 - Dans le répertoire du projet, exécutez la commande npm install pour installer les dépendances
 
 ## Vidéo démonstrative
-- Une vidéo démonstrative de l'application est disponible sur
+- Une vidéo démonstrative de l'application est disponible sur https://www.loom.com/share/c15a8995feef49e3a79585339386eddb
 
 ## Utilisation
 - Démarrez votre blockchain locale Ethereum (par exemple, Ganache)
