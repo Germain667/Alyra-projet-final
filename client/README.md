@@ -9,9 +9,6 @@
 * [Contributeurs](#Contributeurs)
 * [Licence](#Licence)
 
-
-
-
 ## Prérequis
 - Clonez ce dépôt de code
 - Dans le répertoire du projet, exécutez la commande npm install pour installer les dépendances

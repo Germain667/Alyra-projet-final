@@ -1,39 +1,37 @@
-# React Truffle Box
+# BockCar
+> Application qui permet de faire un NFT d'un véhicule pour faciliter l'historisation, la transparence et les informations liés à ce dernier.
 
-This box comes with everything you need to start using Truffle to write, compile, test, and deploy smart contracts, and interact with them from a React app.
+## Table des matières
+* [Prérequis](#Prérequis)
+* [Video](#Utilisation)
+* [Vidéo démonstrative](#Vidéodémonstrative)
+* [Développement](#Développement)
+* [Contributeurs](#Contributeurs)
+* [Licence](#Licence)
 
-## Installation
+## Prérequis
+- Clonez ce dépôt de code
+- Dans le répertoire du projet, exécutez la commande npm install pour installer les dépendances
 
-First ensure you are in an empty directory.
+## Vidéo démonstrative
+- Une vidéo démonstrative de l'application est disponible sur
 
-Run the `unbox` command using 1 of 2 ways.
+## Utilisation
+- Démarrez votre blockchain locale Ethereum (par exemple, Ganache)
+- Dans le répertoire du projet, exécutez la commande truffle migrate --reset pour déployer le contrat intelligent sur la blockchain
+- Dans le répertoire du projet, exécutez la commande npm start pour démarrer l'application web
 
-```sh
-# Install Truffle globally and run `truffle unbox`
-$ npm install -g truffle
-$ truffle unbox react
-```
+## Développement
+- Utilisez la commande truffle test pour exécuter les tests
+- Modifiez les fichiers dans le répertoire /contracts pour modifier le contrat intelligent
+- Modifiez les fichiers dans le répertoire /src pour modifier l'application web
+- Vidéo démonstrative
+- Une vidéo démonstrative de l'application est disponible sur YouTube.
 
-```sh
-# Alternatively, run `truffle unbox` via npx
-$ npx truffle unbox react
-```
+## Contributeurs du projet de la Promo Satoshi
+- Florent L.
+- Nicolas D.
+- Marc B.
 
-Start the react dev server.
-
-```sh
-$ cd client
-$ npm start
-```
-
-From there, follow the instructions on the hosted React app. It will walk you through using Truffle and Ganache to deploy the `SimpleStorage` contract, making calls to it, and sending transactions to change the contract's state.
-
-## FAQ
-
-- __How do I use this with Ganache (or any other network)?__
-
-  The Truffle project is set to deploy to Ganache by default. If you'd like to change this, it's as easy as modifying the Truffle config file! Check out [our documentation on adding network configurations](https://trufflesuite.com/docs/truffle/reference/configuration/#networks). From there, you can run `truffle migrate` pointed to another network, restart the React dev server, and see the change take place.
-
-- __Where can I find more resources?__
-
-  This Box is a sweet combo of [Truffle](https://trufflesuite.com) and [Webpack](https://webpack.js.org). Either one would be a great place to start!
+## Licence
+- MIT
