@@ -232,8 +232,8 @@ contract('BlockCar', accounts => {
 
     });
 
-    //-------------------- Function getNftIdsByOnSaleAndKycDone -------------------------//
-    describe("testing getNftIdsByOnSaleAndKycDone", function () {
+    //-------------------- Function getNftIdsByOnSale -------------------------//
+    describe("testing getNftIdsByOnSale", function () {
 
         beforeEach(async function () {
             BlockCarInstance = await BlockCar.new({from:owner});
@@ -255,7 +255,7 @@ contract('BlockCar', accounts => {
         });
 
         it('returns the NFT IDs fir the car which have the status onSale And kycDone to true', async function () {
-            const nftIds = await BlockCarInstance.getNftIdsByOnSaleAndKycDone({from: user1});
+            const nftIds = await BlockCarInstance.getNftIdsByOnSale({from: user1});
             const expectedIds = [1,2,3];
             const nftIdsAsInt = nftIds.map(id => id.toNumber());
             expect(nftIdsAsInt).to.have.members(expectedIds);

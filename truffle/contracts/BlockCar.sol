@@ -10,8 +10,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /**
  * @title BlockCar
  * @author Germain Winckel
- * @notice The blockCar contract code
- * @dev The blockCar contract code
+ * @notice The blockCar contract
+ * @dev The blockCar contract which inherits from ERC721
  */
 contract BlockCar is ERC721URIStorage, Ownable {
     /**
